@@ -15,7 +15,7 @@ return [
     'delete' => '削除',
     'copy' => 'コピー',
     'close' => '閉じる',
-    
+
     // Admin Login
     'admin_login' => '管理者ログイン',
     'password' => 'パスワード',
@@ -23,7 +23,7 @@ return [
     'logout' => 'ログアウト',
     'login_failed' => 'ログインに失敗しました。パスワードが正しくありません。',
     'login_required' => 'このページにアクセスするにはログインが必要です。',
-    
+
     // Admin Dashboard
     'dashboard' => 'ダッシュボード',
     'secure_file_sharing' => 'セキュアファイル共有システム',
@@ -33,7 +33,7 @@ return [
     'settings' => '設定',
     'advanced_settings' => '高度な設定',
     'how_to_use' => '使い方',
-    
+
     // Upload Form
     'share_title' => '共有タイトル（管理用）',
     'share_title_placeholder' => '例：〇〇様向け資料',
@@ -52,7 +52,7 @@ return [
     'clear_all' => 'すべてクリア',
     'uploading' => 'アップロード中...',
     'upload_and_create' => 'アップロードして共有リンクを作成',
-    
+
     // Share List
     'title' => 'タイトル',
     'share_url' => '共有URL',
@@ -65,27 +65,27 @@ return [
     'url_copied' => 'URLをコピーしました！',
     'copy_failed' => 'コピーに失敗しました',
     'confirm_delete' => '削除してもよろしいですか？アップロードされたファイルも削除されます。',
-    
+
     // Upload Complete Modal
     'upload_complete' => 'アップロード完了！',
     'files_saved_securely' => 'ファイルは安全に保存され、共有リンクが作成されました。',
     'refresh_list' => 'リストを更新',
     'reloading' => '画面を再読み込みします...',
-    
+
     // Share Page (Frontend)
     'file_sharing' => 'ファイル共有',
     'total' => '合計',
     'download_as_zip' => 'ZIPでダウンロード',
     'download_file' => 'ダウンロード',
     'questions_contact' => 'ご不明な点がございましたら、お気軽にお問い合わせください。',
-    
+
     // Password Page
     'password_authentication' => 'パスワード認証',
     'password_protected_area' => 'パスワード保護エリア',
     'password_required_message' => 'このコンテンツにアクセスするにはパスワードが必要です。',
     'incorrect_password' => 'パスワードが正しくありません。',
     'authenticate_and_view' => '認証してファイルを表示',
-    
+
     // Advanced Settings
     'advanced_intro' => 'このページでは、データベースとファイルの整合性を確認・管理できます。',
     'warning_irreversible' => '※ 警告：クリーンアップ操作は元に戻せません。',
@@ -112,7 +112,7 @@ return [
     'published' => '公開中',
     'draft' => '下書き',
     'upload_folder_path' => 'アップロードフォルダパス',
-    
+
     // How to Use
     'version' => 'バージョン',
     'author' => '作者',
@@ -159,16 +159,16 @@ return [
     'cookie_auth_desc' => 'パスワード認証は1時間有効',
     'referer_check' => 'リファラーチェック：',
     'referer_check_desc' => '共有ページ外からのダウンロードを防止',
-    
+
     // Theme
     'theme' => 'テーマ',
     'light_mode' => 'ライトモード',
     'dark_mode' => 'ダークモード',
     'system' => 'システム設定',
-    
+
     // Language
     'language' => '言語',
-    
+
     // Errors
     'title_required' => 'タイトルは必須です。',
     'files_required' => 'ファイルを1つ以上選択してください。',
@@ -185,7 +185,7 @@ return [
     'page_not_found_message' => 'にゃんと！お探しのページは見つかりませんでした。URLが正しいか確認してみてね！',
     'permission_denied' => '権限がありません。',
     'cat_says_nope' => 'ダメにゃ！ズルはダメだにゃん！正規のルートからアクセスしてにゃ〜',
-    
+
     // Session Management (Restored)
     'cleanup_records' => 'レコードをクリーンアップ',
     'session_stats' => 'セッション統計',
@@ -197,7 +197,7 @@ return [
     'cleanup_complete' => 'クリーンアップ完了！',
     'delete_all' => '全部消す',
     'confirm_delete_all' => '本当に全部消しますか？',
-    
+
     // JS UI
     'edit_share' => '共有を編集',
     'password_placeholder' => '新しいパスワード',
@@ -206,7 +206,7 @@ return [
     'search' => '検索',
     'edit' => '編集',
     'status' => '状態',
-    
+
     // Password Tips Section
     'password_tips_title' => 'パスワードに関する補足',
     'password_forgot_title' => 'パスワードをコピーし忘れてしまった場合',
@@ -215,34 +215,56 @@ return [
     'password_forgot_step2' => 'サイコロアイコンをクリックして新しいパスワードを生成（生成直後にクリップボードへ自動コピーされます）',
     'password_forgot_step3' => '「保存」または「更新」ボタンをクリックして反映',
     'password_tip' => 'パスワードを空欄にして保存すると、パスワード保護なし（公開状態）に変更できます。',
-    
+
     'clipboard_windows_title' => 'Windows 11をお使いの方へ',
     'clipboard_windows_step1' => 'スタート > 設定 > システム > クリップボード をクリック',
     'clipboard_windows_step2' => '「クリップボードの履歴」のトグルを「オン」に設定',
     'clipboard_windows_step3' => 'Windowsキー + V でクリップボードの履歴をいつでも呼び出せます',
-    
+
     'clipboard_mac_title' => 'Macをお使いの方へ',
     'clipboard_mac_desc' => 'macOS Tahoe (macOS 26) 以降では、標準機能としてクリップボード履歴が利用可能です。それ以前のバージョンでは、下記のようなフリーソフトの活用をおすすめします。',
-    
+
     'clipboard_recommend_title' => 'おすすめのクリップボード管理ツール',
     'clipboard_recommend_desc' => 'クリップボードを監視することで「パスワードをメモし忘れた…」という事態を防げます。以下のツールは非常に使い勝手が良いのでおすすめです。',
-    
+
     // Update Guide
     'update_guide_title' => 'アップデート方法（FTP）',
     'update_warning_title' => '⚠️ 重要：アップデート時の注意事項',
-    'update_warning_desc' => '以下のフォルダ・ファイルは絶対に上書きしないでください！これらを上書きすると、今までアップロードしたファイルや共有情報がすべて消えてしまいます。',
+    'update_warning_desc' => '以下のフォルダ・ファイルは絶対に上書きしないでください！これらを上書きすると、設定やアップロードしたファイル、共有情報がすべて消えてしまいます。',
+    'update_config_desc' => 'あなたのカスタム設定（パスワード、管理画面URL等）が含まれています',
     'update_storage_desc' => 'アップロードされたファイルが保存されています',
     'update_database_desc' => '共有情報・パスワード・ダウンロード回数などのデータが保存されています',
     'update_step1' => 'ステップ1：バックアップを取る',
     'update_step1_1' => 'FTPソフトで現在のサーバー上のファイル一式をダウンロードして保存',
-    'update_step1_2' => '特に「storage」フォルダと「database」フォルダは必ずバックアップ',
+    'update_step1_2' => '特に「config.php」「storage」フォルダ「database」フォルダは必ずバックアップ',
     'update_step2' => 'ステップ2：新しいファイルをアップロード',
-    'update_step2_1' => '新バージョンのファイルを解凍',
-    'update_step2_2' => '「storage」フォルダと「database」フォルダを除いた全ファイルをFTPでアップロード',
-    'update_step2_3' => '※ 既存のファイルは上書きしてOK（storage、databaseフォルダ以外）',
+    'update_step2_1' => 'アップデート用パッケージ（simple-secure-file-share-update.zip）をダウンロードして解凍',
+    'update_step2_2' => '解凍したファイルをFTPでアップロード（config.php、storage、databaseは含まれていません）',
+    'update_step2_3' => '※ アップデート用パッケージを使えば安全に上書きアップロードできます',
     'update_step3' => 'ステップ3：動作確認',
     'update_step3_1' => '管理画面にアクセスして正常に表示されるか確認',
     'update_step3_2' => '既存の共有リンクが正しく動作するか確認',
     'update_tip_title' => 'ワンポイントアドバイス',
-    'update_tip_desc' => 'もし間違えて「storage」や「database」を上書きしてしまった場合は、ステップ1で取ったバックアップからこれらのフォルダを復元すれば元に戻せます。アップデート前のバックアップは大切に保管してください。',
+    'update_tip_desc' => 'もし間違えて「config.php」「storage」「database」を上書きしてしまった場合は、ステップ1で取ったバックアップからこれらを復元すれば元に戻せます。アップデート前のバックアップは大切に保管してください。',
+
+    // Upload Mode
+    'extension_not_allowed' => 'このファイル形式はアップロードできません。許可されている拡張子',
+    'upload_mode' => 'アップロードモード',
+    'upload_mode_image_only' => '画像のみ',
+    'upload_mode_archive_only' => '圧縮ファイルのみ',
+    'upload_mode_all' => 'すべて許可',
+    'upload_mode_custom' => 'カスタム',
+    'current_upload_mode' => '現在のアップロードモード',
+
+    // SQLite Maintenance
+    'db_maintenance' => 'データベースメンテナンス',
+    'db_size' => 'データベースサイズ',
+    'run_maintenance' => 'メンテナンス実行',
+    'run_maintenance_desc' => 'セッションクリーンアップとDBの軽量最適化を実行します',
+    'run_vacuum' => 'データベースを再構築（VACUUM）',
+    'run_vacuum_desc' => 'DBファイルを再構築し不要領域を開放します。処理に時間がかかる場合があります。',
+    'confirm_vacuum' => 'VACUUMを実行しますか？大きなデータベースでは時間がかかる場合があります。',
+    'maintenance_complete' => 'メンテナンス完了',
+    'vacuum_complete' => 'VACUUM完了',
+    'size_reduced' => '削減サイズ',
 ];

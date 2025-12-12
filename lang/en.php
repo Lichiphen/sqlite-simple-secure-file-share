@@ -15,7 +15,7 @@ return [
     'delete' => 'Delete',
     'copy' => 'Copy',
     'close' => 'Close',
-    
+
     // Admin Login
     'admin_login' => 'Admin Login',
     'password' => 'Password',
@@ -23,7 +23,7 @@ return [
     'logout' => 'Logout',
     'login_failed' => 'Login failed. Incorrect password.',
     'login_required' => 'Please login to access this page.',
-    
+
     // Admin Dashboard
     'dashboard' => 'Dashboard',
     'secure_file_sharing' => 'Secure File Sharing System',
@@ -33,7 +33,7 @@ return [
     'settings' => 'Settings',
     'advanced_settings' => 'Advanced Settings',
     'how_to_use' => 'How to Use',
-    
+
     // Upload Form
     'share_title' => 'Share Title (for management)',
     'share_title_placeholder' => 'Example: Documents for Mr./Ms. XX',
@@ -52,7 +52,7 @@ return [
     'clear_all' => 'Clear all',
     'uploading' => 'Uploading...',
     'upload_and_create' => 'Upload and Create Share Link',
-    
+
     // Share List
     'title' => 'Title',
     'share_url' => 'Share URL',
@@ -65,27 +65,27 @@ return [
     'url_copied' => 'URL copied!',
     'copy_failed' => 'Copy failed',
     'confirm_delete' => 'Are you sure you want to delete? Uploaded files will also be deleted.',
-    
+
     // Upload Complete Modal
     'upload_complete' => 'Upload Complete!',
     'files_saved_securely' => 'Files have been saved securely and a share link has been created.',
     'refresh_list' => 'Refresh List',
     'reloading' => 'Reloading page...',
-    
+
     // Share Page (Frontend)
     'file_sharing' => 'File Sharing',
     'total' => 'Total',
     'download_as_zip' => 'Download as ZIP',
     'download_file' => 'Download File',
     'questions_contact' => 'If you have any questions, please feel free to contact us.',
-    
+
     // Password Page
     'password_authentication' => 'Password Authentication',
     'password_protected_area' => 'Password Protected Area',
     'password_required_message' => 'A password is required to access this content.',
     'incorrect_password' => 'Incorrect password.',
     'authenticate_and_view' => 'Authenticate and View Files',
-    
+
     // Advanced Settings
     'advanced_intro' => 'On this page, you can check and manage the consistency of the plugin database and files.',
     'warning_irreversible' => '* Warning: Cleanup operations cannot be undone.',
@@ -112,7 +112,7 @@ return [
     'published' => 'Published',
     'draft' => 'Draft',
     'upload_folder_path' => 'Upload Folder Path',
-    
+
     // How to Use
     'version' => 'Version',
     'author' => 'Author',
@@ -159,16 +159,16 @@ return [
     'cookie_auth_desc' => 'Password authentication is valid for 1 hour',
     'referer_check' => 'Referer Check:',
     'referer_check_desc' => 'Prevents downloads from outside the share page',
-    
+
     // Theme
     'theme' => 'Theme',
     'light_mode' => 'Light Mode',
     'dark_mode' => 'Dark Mode',
     'system' => 'System',
-    
+
     // Language
     'language' => 'Language',
-    
+
     // Errors
     'title_required' => 'Title is required.',
     'files_required' => 'Please select at least one file.',
@@ -185,7 +185,7 @@ return [
     'page_not_found_message' => 'Meow! The page you are looking for could not be found. Please check the URL and try again!',
     'permission_denied' => 'Permission denied.',
     'cat_says_nope' => 'Nope! No cheating allowed, meow! Please access through the proper route~',
-    
+
     // Session Management
     'cleanup_records' => 'Cleanup Records',
     'session_stats' => 'Session Statistics',
@@ -197,7 +197,7 @@ return [
     'cleanup_complete' => 'Cleanup complete!',
     'delete_all' => 'ALL Delete',
     'confirm_delete_all' => 'Are you sure you want to delete all data? This action cannot be undone. IDs will also be reset.',
-    
+
     // JS UI
     'edit_share' => 'Edit Share',
     'password_placeholder' => 'New Password',
@@ -206,7 +206,7 @@ return [
     'search' => 'Search',
     'edit' => 'Edit',
     'status' => 'Status',
-    
+
     // Password Tips Section
     'password_tips_title' => 'Password Tips',
     'password_forgot_title' => 'Forgot to copy the password?',
@@ -215,34 +215,56 @@ return [
     'password_forgot_step2' => 'Click the dice icon to generate a new password (automatically copied to clipboard)',
     'password_forgot_step3' => 'Click "Save" or "Update" button to apply',
     'password_tip' => 'Leave the password field empty and save to remove password protection (make it public).',
-    
+
     'clipboard_windows_title' => 'For Windows 11 Users',
     'clipboard_windows_step1' => 'Go to Start > Settings > System > Clipboard',
     'clipboard_windows_step2' => 'Turn on "Clipboard history"',
     'clipboard_windows_step3' => 'Press Windows key + V to access clipboard history anytime',
-    
+
     'clipboard_mac_title' => 'For Mac Users',
     'clipboard_mac_desc' => 'macOS Tahoe (macOS 26) and later includes native clipboard history support. For earlier versions, we recommend using a clipboard manager app listed below.',
-    
+
     'clipboard_recommend_title' => 'Recommended Clipboard Managers',
     'clipboard_recommend_desc' => 'Using a clipboard manager helps prevent "I forgot to save the password" situations. These tools are highly recommended for their ease of use.',
-    
+
     // Update Guide
     'update_guide_title' => 'How to Update (FTP)',
     'update_warning_title' => '⚠️ Important: Update Precautions',
-    'update_warning_desc' => 'NEVER overwrite the following folders/files! Overwriting them will delete all your uploaded files and share information.',
+    'update_warning_desc' => 'NEVER overwrite the following folders/files! Overwriting them will delete your configuration, uploaded files, and share information.',
+    'update_config_desc' => 'Contains your custom configuration (password, admin URL, etc.)',
     'update_storage_desc' => 'Contains all uploaded files',
     'update_database_desc' => 'Contains share info, passwords, download counts, and other data',
     'update_step1' => 'Step 1: Create a Backup',
     'update_step1_1' => 'Download all current files from the server using FTP software',
-    'update_step1_2' => 'Make sure to backup the "storage" and "database" folders',
+    'update_step1_2' => 'Make sure to backup "config.php", "storage" folder, and "database" folder',
     'update_step2' => 'Step 2: Upload New Files',
-    'update_step2_1' => 'Extract the new version files',
-    'update_step2_2' => 'Upload all files via FTP EXCEPT the "storage" and "database" folders',
-    'update_step2_3' => '* You can safely overwrite existing files (except storage and database folders)',
+    'update_step2_1' => 'Download and extract the update package (simple-secure-file-share-update.zip)',
+    'update_step2_2' => 'Upload extracted files via FTP (config.php, storage, and database are not included)',
+    'update_step2_3' => '* Using the update package allows safe overwrite uploading',
     'update_step3' => 'Step 3: Verify',
     'update_step3_1' => 'Access the admin panel and verify it loads correctly',
     'update_step3_2' => 'Test that existing share links work properly',
     'update_tip_title' => 'Pro Tip',
-    'update_tip_desc' => 'If you accidentally overwrite the "storage" or "database" folders, you can restore them from the backup you created in Step 1. Always keep your pre-update backup safe.',
+    'update_tip_desc' => 'If you accidentally overwrite the "config.php", "storage", or "database" folders, you can restore them from the backup you created in Step 1. Always keep your pre-update backup safe.',
+
+    // Upload Mode
+    'extension_not_allowed' => 'This file type is not allowed. Allowed extensions',
+    'upload_mode' => 'Upload Mode',
+    'upload_mode_image_only' => 'Images Only',
+    'upload_mode_archive_only' => 'Archives Only',
+    'upload_mode_all' => 'All Files',
+    'upload_mode_custom' => 'Custom',
+    'current_upload_mode' => 'Current Upload Mode',
+
+    // SQLite Maintenance
+    'db_maintenance' => 'Database Maintenance',
+    'db_size' => 'Database Size',
+    'run_maintenance' => 'Run Maintenance',
+    'run_maintenance_desc' => 'Clean up sessions and perform lightweight database optimization',
+    'run_vacuum' => 'Rebuild Database (VACUUM)',
+    'run_vacuum_desc' => 'Rebuild DB file to reclaim unused space. May take time for large databases.',
+    'confirm_vacuum' => 'Run VACUUM? This may take time for large databases.',
+    'maintenance_complete' => 'Maintenance complete',
+    'vacuum_complete' => 'VACUUM complete',
+    'size_reduced' => 'Size reduced',
 ];

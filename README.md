@@ -4,6 +4,12 @@ A simple, secure, and self-hosted file sharing system with password protection.
 
 [![License: Lichiphen Proprietary](https://img.shields.io/badge/License-Lichiphen%20Proprietary-purple.svg)](LICENSE)
 
+## 📺 Demo Video
+
+[![Demo Video](https://img.youtube.com/vi/QwwJOc5uCb4/0.jpg)](https://youtu.be/QwwJOc5uCb4)
+
+👆 Click the image to watch the demo on YouTube
+
 ## Features
 
 - 🔒 **Password Protection** - Secure your shared files with optional password
@@ -62,13 +68,28 @@ define('SESSION_LIFETIME', 3600); // 1 hour
 
 ## Updating
 
-⚠️ **Important**: When updating, **DO NOT overwrite** these folders:
+### Download Packages
+
+Two types of ZIP packages are available:
+
+| Package | Description | Use Case |
+|---------|-------------|----------|
+| `simple-secure-file-share-update.zip` | Excludes `config.php`, `storage/`, `database/` | For existing users updating |
+| `simple-secure-file-share-full.zip` | Complete package with all files | For new installations |
+
+### ⚠️ Important: Files to Preserve
+
+When updating, **DO NOT overwrite** these files/folders:
+- `config.php` - Your custom configuration (password, admin URL, etc.)
 - `storage/` - Contains all uploaded files
 - `database/` - Contains share information and settings
 
+### Update Steps
+
 1. Backup your current installation
-2. Upload new files (excluding `storage/` and `database/`)
-3. Verify the admin panel and existing share links work correctly
+2. Download the **update package** (`simple-secure-file-share-update.zip`)
+3. Extract and upload all files via FTP (these won't include config.php, storage/, database/)
+4. Verify the admin panel and existing share links work correctly
 
 ## Directory Structure
 
@@ -94,6 +115,20 @@ simple-share/
 - HTTPS redirect support (enable in .htaccess)
 - Cute but firm error pages for unauthorized access attempts
 
+## Subdirectory Installation (WordPress Coexistence)
+
+If you install this in a subdirectory (e.g., `/simple-secure-file-share/`) alongside WordPress or other CMS:
+
+1. Edit `.htaccess` in the application folder
+2. Change `RewriteBase /` to match your subdirectory:
+
+```apache
+# Example: installed at /simple-secure-file-share/
+RewriteBase /simple-secure-file-share/
+```
+
+> **Symptom**: If you see the WordPress "Page not found" error instead of the cat 404 page when accessing `/admin`, this is likely the cause.
+
 ## License
 
 This project is licensed under the Lichiphen Proprietary License v1.0 - see the [LICENSE](LICENSE) file for details.
@@ -108,6 +143,12 @@ This project is licensed under the Lichiphen Proprietary License v1.0 - see the 
 # Simple Secure File Share（日本語）
 
 シンプルで安全なセルフホスト型ファイル共有システムです。
+
+## 📺 デモ動画
+
+[![デモ動画](https://img.youtube.com/vi/QwwJOc5uCb4/0.jpg)](https://youtu.be/QwwJOc5uCb4)
+
+👆 画像をクリックするとYouTubeでデモをご覧いただけます
 
 ## 特徴
 
@@ -167,13 +208,28 @@ define('SESSION_LIFETIME', 3600); // 1時間
 
 ## アップデート方法
 
-⚠️ **重要**: アップデート時、以下のフォルダは**絶対に上書きしないでください**：
+### ダウンロードパッケージ
+
+2種類のZIPパッケージを用意しています：
+
+| パッケージ | 内容 | 用途 |
+|----------|------|------|
+| `simple-secure-file-share-update.zip` | `config.php`, `storage/`, `database/`を除外 | 既存ユーザーのアップデート用 |
+| `simple-secure-file-share-full.zip` | 全ファイル含む完全版 | 新規インストール用 |
+
+### ⚠️ 重要：上書き禁止ファイル
+
+アップデート時、以下のファイル・フォルダは**絶対に上書きしないでください**：
+- `config.php` - あなたのカスタム設定（パスワード、管理画面URL等）が含まれています
 - `storage/` - アップロードされた全ファイルが保存されています
 - `database/` - 共有情報や設定が保存されています
 
+### アップデート手順
+
 1. 現在のインストールをバックアップ
-2. 新しいファイルをアップロード（`storage/` と `database/` を除く）
-3. 管理画面と既存の共有リンクが正常に動作することを確認
+2. **アップデート用パッケージ**（`simple-secure-file-share-update.zip`）をダウンロード
+3. 解凍してFTPで全ファイルをアップロード（config.php, storage/, database/は含まれていません）
+4. 管理画面と既存の共有リンクが正常に動作することを確認
 
 ## ディレクトリ構成
 
@@ -198,6 +254,20 @@ simple-share/
 - 管理画面URLのカスタマイズで発見を防止
 - HTTPSリダイレクト対応（.htaccessで有効化）
 - 不正アクセス時の可愛くも厳しいエラーページ
+
+## サブディレクトリ配置（WordPress共存）
+
+WordPressなど他のCMSと同じサーバーで、サブディレクトリ（例：`/simple-secure-file-share/`）に配置する場合：
+
+1. アプリケーションフォルダ内の`.htaccess`を編集
+2. `RewriteBase /` をサブディレクトリに合わせて変更：
+
+```apache
+# 例: /simple-secure-file-share/ に配置した場合
+RewriteBase /simple-secure-file-share/
+```
+
+> **症状**: `/admin`にアクセスした際、猫の404ページではなくWordPressの「ページが見つかりません」が表示される場合、これが原因です。
 
 ## ライセンス
 
