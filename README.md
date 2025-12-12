@@ -70,12 +70,12 @@ define('SESSION_LIFETIME', 3600); // 1 hour
 
 ### Download Packages
 
-Two types of ZIP packages are available:
+Two types of ZIP packages are available from [Releases](https://gitlab.com/lichiphen/sqlite-simple-secure-file-share/-/releases):
 
 | Package | Description | Use Case |
 |---------|-------------|----------|
-| `simple-secure-file-share-update.zip` | Excludes `config.php`, `storage/`, `database/` | For existing users updating |
-| `simple-secure-file-share-full.zip` | Complete package with all files | For new installations |
+| `simple-secure-file-share-vX.X.X-update.zip` | Excludes `config.php`, `storage/`, `database/` | For existing users updating |
+| `simple-secure-file-share-vX.X.X-full.zip` | Complete package with all files | For new installations |
 
 ### ⚠️ Important: Files to Preserve
 
@@ -84,10 +84,25 @@ When updating, **DO NOT overwrite** these files/folders:
 - `storage/` - Contains all uploaded files
 - `database/` - Contains share information and settings
 
+### 🔄 Upgrading to v1.5.0 (Breaking Change)
+
+**v1.5.0 introduces `version.php`** - Version info is now separated from `config.php`.
+
+If you're upgrading from v1.4.x or earlier:
+
+1. **Backup your current `config.php` settings** (note down these values):
+   - `ADMIN_PASSWORD`
+   - `ADMIN_URL_PATH`
+   - `MAX_UPLOAD_SIZE`
+2. **Upload all new files including `config.php`** (overwrite is OK this time)
+3. **Edit the new `config.php`** and restore your settings from step 1
+
+> **Why?** The new `config.php` includes `version.php` require statement and new settings (upload mode, etc.). Future updates won't require this step.
+
 ### Update Steps
 
 1. Backup your current installation
-2. Download the **update package** (`simple-secure-file-share-update.zip`)
+2. Download the **update package** from [Releases](https://gitlab.com/lichiphen/sqlite-simple-secure-file-share/-/releases)
 3. Extract and upload all files via FTP (these won't include config.php, storage/, database/)
 4. Verify the admin panel and existing share links work correctly
 
@@ -210,12 +225,12 @@ define('SESSION_LIFETIME', 3600); // 1時間
 
 ### ダウンロードパッケージ
 
-2種類のZIPパッケージを用意しています：
+[Releases](https://gitlab.com/lichiphen/sqlite-simple-secure-file-share/-/releases)から2種類のZIPパッケージをダウンロードできます：
 
 | パッケージ | 内容 | 用途 |
 |----------|------|------|
-| `simple-secure-file-share-update.zip` | `config.php`, `storage/`, `database/`を除外 | 既存ユーザーのアップデート用 |
-| `simple-secure-file-share-full.zip` | 全ファイル含む完全版 | 新規インストール用 |
+| `simple-secure-file-share-vX.X.X-update.zip` | `config.php`, `storage/`, `database/`を除外 | 既存ユーザーのアップデート用 |
+| `simple-secure-file-share-vX.X.X-full.zip` | 全ファイル含む完全版 | 新規インストール用 |
 
 ### ⚠️ 重要：上書き禁止ファイル
 
@@ -224,10 +239,25 @@ define('SESSION_LIFETIME', 3600); // 1時間
 - `storage/` - アップロードされた全ファイルが保存されています
 - `database/` - 共有情報や設定が保存されています
 
+### 🔄 v1.5.0へのアップグレード（重要な変更あり）
+
+**v1.5.0で`version.php`が追加されました** - バージョン情報が`config.php`から分離されました。
+
+v1.4.x以前からアップグレードする場合：
+
+1. **現在の`config.php`の設定値をメモしてください**：
+   - `ADMIN_PASSWORD`（管理者パスワード）
+   - `ADMIN_URL_PATH`（管理画面URL）
+   - `MAX_UPLOAD_SIZE`（最大アップロードサイズ）
+2. **新しいファイル一式を`config.php`含めてアップロード**（今回は上書きOK）
+3. **新しい`config.php`を編集**し、ステップ1でメモした設定値を復元
+
+> **なぜ？** 新しい`config.php`には`version.php`のrequire文と新機能（アップロードモード等）の設定が含まれています。次回以降のアップデートではこの手順は不要です。
+
 ### アップデート手順
 
 1. 現在のインストールをバックアップ
-2. **アップデート用パッケージ**（`simple-secure-file-share-update.zip`）をダウンロード
+2. [Releases](https://gitlab.com/lichiphen/sqlite-simple-secure-file-share/-/releases)から**アップデート用パッケージ**をダウンロード
 3. 解凍してFTPで全ファイルをアップロード（config.php, storage/, database/は含まれていません）
 4. 管理画面と既存の共有リンクが正常に動作することを確認
 
