@@ -4,13 +4,18 @@ A simple, secure, and self-hosted file sharing system with password protection.
 
 [![License: Lichiphen Proprietary](https://img.shields.io/badge/License-Lichiphen%20Proprietary-purple.svg)](LICENSE)
 
+## 📺 Demo Video
+
+[![Demo Video](https://img.youtube.com/vi/QwwJOc5uCb4/0.jpg)](https://youtu.be/QwwJOc5uCb4)
+
+👆 Click the image to watch the demo on YouTube
+
 ## Features
 
 - 🔒 **Password Protection** - Secure your shared files with optional password
 - 📊 **Download Counter** - Track how many times files have been downloaded
 - 📦 **ZIP Download** - Download multiple files as a single ZIP archive
-- � **Upload Mode Control** - Restrict uploads to images only, archives only, or custom extensions
-- �🛡️ **Direct Link Prevention** - Prevent unauthorized access via direct URLs
+- 🛡️ **Direct Link Prevention** - Prevent unauthorized access via direct URLs
 - 🔐 **Hidden Admin URL** - Customize admin panel URL to hide from attackers
 - 🌙 **Dark Mode Support** - Automatic theme switching based on system preference
 - 🌐 **Multi-language** - English and Japanese support
@@ -50,23 +55,10 @@ define('MAX_UPLOAD_SIZE', 100 * 1024 * 1024); // 100MB
 //   100 * 1024 * 1024  = 100MB
 //   500 * 1024 * 1024  = 500MB
 //   1024 * 1024 * 1024 = 1GB
-
-// Upload mode:
-// 'IMAGE_ONLY'   - Only image files (jpg, png, gif, webp, heic, avif, tiff)
-// 'ARCHIVE_ONLY' - Only archive files (zip, 7z, rar, tar, gz)
-// 'ALL'          - All files allowed (default)
-// 'CUSTOM'       - Only extensions specified in CUSTOM_UPLOAD_EXTENSIONS
-define('UPLOAD_MODE', 'ALL');
-
-// Custom allowed extensions (comma-separated, used when UPLOAD_MODE is 'CUSTOM')
-// Example: 'jpg,jpeg,png,psd,pdf,zip'
-define('CUSTOM_UPLOAD_EXTENSIONS', 'jpg,jpeg,png,psd,pdf,zip');
+//   2 * 1024 * 1024 * 1024 = 2GB
 
 // Session lifetime (in seconds)
 define('SESSION_LIFETIME', 3600); // 1 hour
-
-// Default language ('en' or 'ja')
-define('DEFAULT_LANGUAGE', 'ja');
 ```
 
 > **Note**: For large file uploads, you may also need to adjust your server's `php.ini` settings:
@@ -74,16 +66,45 @@ define('DEFAULT_LANGUAGE', 'ja');
 > - `post_max_size`
 > - `max_execution_time`
 
-
 ## Updating
 
-⚠️ **Important**: When updating, **DO NOT overwrite** these folders:
+### Download Packages
+
+Two types of ZIP packages are available from [Releases](https://gitlab.com/lichiphen/sqlite-simple-secure-file-share/-/releases):
+
+| Package | Description | Use Case |
+|---------|-------------|----------|
+| `simple-secure-file-share-vX.X.X-update.zip` | Excludes `config.php`, `storage/`, `database/` | For existing users updating |
+| `simple-secure-file-share-vX.X.X-full.zip` | Complete package with all files | For new installations |
+
+### ⚠️ Important: Files to Preserve
+
+When updating, **DO NOT overwrite** these files/folders:
+- `config.php` - Your custom configuration (password, admin URL, etc.)
 - `storage/` - Contains all uploaded files
 - `database/` - Contains share information and settings
 
+### 🔄 Upgrading to v1.5.0 (Breaking Change)
+
+**v1.5.0 introduces `version.php`** - Version info is now separated from `config.php`.
+
+If you're upgrading from v1.4.x or earlier:
+
+1. **Backup your current `config.php` settings** (note down these values):
+   - `ADMIN_PASSWORD`
+   - `ADMIN_URL_PATH`
+   - `MAX_UPLOAD_SIZE`
+2. **Upload all new files including `config.php`** (overwrite is OK this time)
+3. **Edit the new `config.php`** and restore your settings from step 1
+
+> **Why?** The new `config.php` includes `version.php` require statement and new settings (upload mode, etc.). Future updates won't require this step.
+
+### Update Steps
+
 1. Backup your current installation
-2. Upload new files (excluding `storage/` and `database/`)
-3. Verify the admin panel and existing share links work correctly
+2. Download the **update package** from [Releases](https://gitlab.com/lichiphen/sqlite-simple-secure-file-share/-/releases)
+3. Extract and upload all files via FTP (these won't include config.php, storage/, database/)
+4. Verify the admin panel and existing share links work correctly
 
 ## Directory Structure
 
@@ -109,19 +130,19 @@ simple-share/
 - HTTPS redirect support (enable in .htaccess)
 - Cute but firm error pages for unauthorized access attempts
 
-## Changelog
+## Subdirectory Installation (WordPress Coexistence)
 
-### v1.4.2
+If you install this in a subdirectory (e.g., `/simple-secure-file-share/`) alongside WordPress or other CMS:
 
-- 🐛 **Bug Fix**: Fixed session cleanup button causing 404 error when using custom admin URL path
-- 🔧 **Improvement**: All admin redirects now properly respect `ADMIN_URL_PATH` configuration
+1. Edit `.htaccess` in the application folder
+2. Change `RewriteBase /` to match your subdirectory:
 
-### v1.4.1
+```apache
+# Example: installed at /simple-secure-file-share/
+RewriteBase /simple-secure-file-share/
+```
 
-- 🛡️ Direct link prevention for downloads
-- 🔐 Hidden admin URL feature (`ADMIN_URL_PATH`)
-- 🐱 Cute error pages with cat mascot animations
-- 🚫 Access denied page for unauthorized download attempts
+> **Symptom**: If you see the WordPress "Page not found" error instead of the cat 404 page when accessing `/admin`, this is likely the cause.
 
 ## License
 
@@ -138,13 +159,18 @@ This project is licensed under the Lichiphen Proprietary License v1.0 - see the 
 
 シンプルで安全なセルフホスト型ファイル共有システムです。
 
+## 📺 デモ動画
+
+[![デモ動画](https://img.youtube.com/vi/QwwJOc5uCb4/0.jpg)](https://youtu.be/QwwJOc5uCb4)
+
+👆 画像をクリックするとYouTubeでデモをご覧いただけます
+
 ## 特徴
 
 - 🔒 **パスワード保護** - 共有ファイルをパスワードで保護
 - 📊 **ダウンロードカウンター** - ダウンロード回数を自動追跡
 - 📦 **ZIPダウンロード** - 複数ファイルをZIPで一括ダウンロード
-- � **アップロードモード制限** - 画像のみ、圧縮ファイルのみ、またはカスタム拡張子に制限可能
-- �🛡️ **直リンク防止** - URLの直接アクセスによる不正ダウンロードを防止
+- 🛡️ **直リンク防止** - URLの直接アクセスによる不正ダウンロードを防止
 - 🔐 **管理画面URL隠蔽** - 管理パネルのURLをカスタマイズして攻撃者から隠蔽
 - 🌙 **ダークモード対応** - システム設定に応じた自動テーマ切り替え
 - 🌐 **多言語対応** - 英語・日本語をサポート
@@ -184,23 +210,10 @@ define('MAX_UPLOAD_SIZE', 100 * 1024 * 1024); // 100MB
 //   100 * 1024 * 1024  = 100MB
 //   500 * 1024 * 1024  = 500MB
 //   1024 * 1024 * 1024 = 1GB
-
-// アップロードモード:
-// 'IMAGE_ONLY'   - 画像ファイルのみ許可 (jpg, png, gif, webp, heic, avif, tiff)
-// 'ARCHIVE_ONLY' - 圧縮ファイルのみ許可 (zip, 7z, rar, tar, gz)
-// 'ALL'          - すべてのファイルを許可（デフォルト）
-// 'CUSTOM'       - 下記のCUSTOM_UPLOAD_EXTENSIONSで指定した拡張子のみ許可
-define('UPLOAD_MODE', 'ALL');
-
-// CUSTOMモード時に許可する拡張子（カンマ区切り）
-// 例: 'jpg,jpeg,png,psd,pdf,zip'
-define('CUSTOM_UPLOAD_EXTENSIONS', 'jpg,jpeg,png,psd,pdf,zip');
+//   2 * 1024 * 1024 * 1024 = 2GB
 
 // セッション有効時間（秒単位）
 define('SESSION_LIFETIME', 3600); // 1時間
-
-// デフォルト言語 ('en' または 'ja')
-define('DEFAULT_LANGUAGE', 'ja');
 ```
 
 > **補足**: 大容量ファイルをアップロードする場合は、サーバーの `php.ini` 設定も調整が必要な場合があります：
@@ -210,13 +223,43 @@ define('DEFAULT_LANGUAGE', 'ja');
 
 ## アップデート方法
 
-⚠️ **重要**: アップデート時、以下のフォルダは**絶対に上書きしないでください**：
+### ダウンロードパッケージ
+
+[Releases](https://gitlab.com/lichiphen/sqlite-simple-secure-file-share/-/releases)から2種類のZIPパッケージをダウンロードできます：
+
+| パッケージ | 内容 | 用途 |
+|----------|------|------|
+| `simple-secure-file-share-vX.X.X-update.zip` | `config.php`, `storage/`, `database/`を除外 | 既存ユーザーのアップデート用 |
+| `simple-secure-file-share-vX.X.X-full.zip` | 全ファイル含む完全版 | 新規インストール用 |
+
+### ⚠️ 重要：上書き禁止ファイル
+
+アップデート時、以下のファイル・フォルダは**絶対に上書きしないでください**：
+- `config.php` - あなたのカスタム設定（パスワード、管理画面URL等）が含まれています
 - `storage/` - アップロードされた全ファイルが保存されています
 - `database/` - 共有情報や設定が保存されています
 
+### 🔄 v1.5.0へのアップグレード（重要な変更あり）
+
+**v1.5.0で`version.php`が追加されました** - バージョン情報が`config.php`から分離されました。
+
+v1.4.x以前からアップグレードする場合：
+
+1. **現在の`config.php`の設定値をメモしてください**：
+   - `ADMIN_PASSWORD`（管理者パスワード）
+   - `ADMIN_URL_PATH`（管理画面URL）
+   - `MAX_UPLOAD_SIZE`（最大アップロードサイズ）
+2. **新しいファイル一式を`config.php`含めてアップロード**（今回は上書きOK）
+3. **新しい`config.php`を編集**し、ステップ1でメモした設定値を復元
+
+> **なぜ？** 新しい`config.php`には`version.php`のrequire文と新機能（アップロードモード等）の設定が含まれています。次回以降のアップデートではこの手順は不要です。
+
+### アップデート手順
+
 1. 現在のインストールをバックアップ
-2. 新しいファイルをアップロード（`storage/` と `database/` を除く）
-3. 管理画面と既存の共有リンクが正常に動作することを確認
+2. [Releases](https://gitlab.com/lichiphen/sqlite-simple-secure-file-share/-/releases)から**アップデート用パッケージ**をダウンロード
+3. 解凍してFTPで全ファイルをアップロード（config.php, storage/, database/は含まれていません）
+4. 管理画面と既存の共有リンクが正常に動作することを確認
 
 ## ディレクトリ構成
 
@@ -242,19 +285,19 @@ simple-share/
 - HTTPSリダイレクト対応（.htaccessで有効化）
 - 不正アクセス時の可愛くも厳しいエラーページ
 
-## 変更履歴
+## サブディレクトリ配置（WordPress共存）
 
-### v1.4.2
+WordPressなど他のCMSと同じサーバーで、サブディレクトリ（例：`/simple-secure-file-share/`）に配置する場合：
 
-- 🐛 **バグ修正**: カスタム管理URLパス使用時にセッションクリーンアップボタンで404エラーが発生する問題を修正
-- 🔧 **改善**: すべての管理画面リダイレクトが `ADMIN_URL_PATH` 設定を正しく反映するように
+1. アプリケーションフォルダ内の`.htaccess`を編集
+2. `RewriteBase /` をサブディレクトリに合わせて変更：
 
-### v1.4.1
+```apache
+# 例: /simple-secure-file-share/ に配置した場合
+RewriteBase /simple-secure-file-share/
+```
 
-- 🛡️ ダウンロードの直リンク防止機能
-- 🔐 管理画面URL隠蔽機能（`ADMIN_URL_PATH`）
-- 🐱 猫マスコットアニメーション付きの可愛いエラーページ
-- 🚫 不正ダウンロード試行時のアクセス拒否ページ
+> **症状**: `/admin`にアクセスした際、猫の404ページではなくWordPressの「ページが見つかりません」が表示される場合、これが原因です。
 
 ## ライセンス
 

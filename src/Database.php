@@ -271,4 +271,83 @@ class Database
         }
         return $orphans;
     }
+
+    /**
+     * SQLiteデータベースの軽量メンテナンスを実行
+     * WALチェックポイントとoptimizeを実行
+     * 
+     * @return array 実行結果
+     */
+    public static function runMaintenance(): array
+    {
+        $pdo = self::getInstance();
+        $results = [];
+
+        try {
+            // WALチェックポイント（ログを本体に反映し、WALファイルを縮める）
+            $pdo->exec("PRAGMA wal_checkpoint(TRUNCATE)");
+            $results['wal_checkpoint'] = true;
+        } catch (\Throwable $e) {
+            $results['wal_checkpoint'] = false;
+            $results['wal_error'] = $e->getMessage();
+        }
+
+        try {
+            // 軽量な最適化（インデックス統計など）
+            $pdo->exec("PRAGMA optimize");
+            $results['optimize'] = true;
+        } catch (\Throwable $e) {
+            $results['optimize'] = false;
+            $results['optimize_error'] = $e->getMessage();
+        }
+
+        return $results;
+    }
+
+    /**
+     * SQLiteデータベースのVACUUMを実行（DB再構築）
+     * 注意: 大きなDBでは時間がかかる可能性あり
+     * 
+     * @return array 実行結果
+     */
+    public static function runVacuum(): array
+    {
+        $pdo = self::getInstance();
+        $results = [];
+
+        try {
+            // DBファイルサイズ取得（実行前）
+            $sizeBefore = file_exists(DATABASE_PATH) ? filesize(DATABASE_PATH) : 0;
+
+            // VACUUM実行
+            $pdo->exec("VACUUM");
+
+            // DBファイルサイズ取得（実行後）
+            clearstatcache(true, DATABASE_PATH);
+            $sizeAfter = file_exists(DATABASE_PATH) ? filesize(DATABASE_PATH) : 0;
+
+            $results['vacuum'] = true;
+            $results['size_before'] = $sizeBefore;
+            $results['size_after'] = $sizeAfter;
+            $results['size_reduced'] = $sizeBefore - $sizeAfter;
+        } catch (\Throwable $e) {
+            $results['vacuum'] = false;
+            $results['vacuum_error'] = $e->getMessage();
+        }
+
+        return $results;
+    }
+
+    /**
+     * データベースファイルサイズを取得
+     * 
+     * @return int ファイルサイズ（バイト）
+     */
+    public static function getDatabaseSize(): int
+    {
+        if (!file_exists(DATABASE_PATH)) {
+            return 0;
+        }
+        return filesize(DATABASE_PATH);
+    }
 }

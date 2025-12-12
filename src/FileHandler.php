@@ -18,6 +18,92 @@ class FileHandler
 {
 
     /**
+     * 許可されたアップロード拡張子を取得
+     * 
+     * @return array 許可拡張子の配列（空配列=全て許可）
+     */
+    public static function getAllowedUploadExtensions(): array
+    {
+        $mode = strtoupper(defined('UPLOAD_MODE') ? UPLOAD_MODE : 'ALL');
+
+        switch ($mode) {
+            case 'IMAGE_ONLY':
+                return [
+                    'jpg',
+                    'jpeg',
+                    'png',
+                    'webp',
+                    'heic',
+                    'heif',
+                    'avif',
+                    'gif',
+                    'tif',
+                    'tiff',
+                ];
+
+            case 'ARCHIVE_ONLY':
+                return [
+                    'zip',
+                    '7z',
+                    'rar',
+                    'tar',
+                    'gz',
+                    'tgz',
+                    'tar.gz',
+                    'tar.bz2',
+                    'tar.xz',
+                ];
+
+            case 'CUSTOM':
+                $raw = defined('CUSTOM_UPLOAD_EXTENSIONS') ? CUSTOM_UPLOAD_EXTENSIONS : '';
+                $parts = array_filter(array_map(function ($item) {
+                    return strtolower(trim($item));
+                }, preg_split('/[,;]+/', $raw)));
+                return array_values(array_unique($parts));
+
+            case 'ALL':
+            default:
+                return []; // 空配列 = 拡張子による制限なし
+        }
+    }
+
+    /**
+     * ファイル拡張子が許可されているかチェック
+     * 
+     * @param string $filename ファイル名
+     * @return bool 許可されていればtrue
+     */
+    public static function isExtensionAllowed(string $filename): bool
+    {
+        $allowedExtensions = self::getAllowedUploadExtensions();
+
+        // 空配列 = 全て許可
+        if (empty($allowedExtensions)) {
+            return true;
+        }
+
+        $lowerName = strtolower($filename);
+        $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+
+        // 単純な拡張子チェック
+        if (in_array($ext, $allowedExtensions, true)) {
+            return true;
+        }
+
+        // "tar.gz" 等の複合拡張子にも対応 (PHP 7.4互換)
+        foreach ($allowedExtensions as $pattern) {
+            if (strpos($pattern, '.') !== false) {
+                $suffix = '.' . $pattern;
+                if (substr($lowerName, -strlen($suffix)) === $suffix) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Generate unique token
      */
     public static function generateToken(): string
@@ -63,6 +149,19 @@ class FileHandler
 
         if (empty($fileList)) {
             return ['success' => false, 'message' => __('files_required')];
+        }
+
+        // 拡張子チェック
+        $allowedExtensions = self::getAllowedUploadExtensions();
+        if (!empty($allowedExtensions)) {
+            foreach ($fileList as $file) {
+                if (!self::isExtensionAllowed($file['name'])) {
+                    return [
+                        'success' => false,
+                        'message' => __('extension_not_allowed') . ': ' . implode(', ', $allowedExtensions)
+                    ];
+                }
+            }
         }
 
         // Generate token and create directory
