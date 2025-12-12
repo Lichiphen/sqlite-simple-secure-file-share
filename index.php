@@ -366,19 +366,7 @@ function handleAdvancedPage(): void
 
                     case 'cleanup_sessions':
                         Auth::cleanupSessions();
-                        // SQLite軽量メンテナンスも同時実行
-                        Database::runMaintenance();
-                        Auth::setFlash(__('maintenance_complete'));
-                        break;
-
-                    case 'run_vacuum':
-                        $result = Database::runVacuum();
-                        if ($result['vacuum']) {
-                            $reduced = FileHandler::formatSize($result['size_reduced']);
-                            Auth::setFlash(__('vacuum_complete') . ' (' . __('size_reduced') . ': ' . $reduced . ')');
-                        } else {
-                            Auth::setFlash(__('error') . ': ' . ($result['vacuum_error'] ?? 'Unknown error'));
-                        }
+                        Auth::setFlash(__('success'));
                         break;
 
                     case 'delete_all_shares':

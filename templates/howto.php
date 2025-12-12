@@ -486,9 +486,6 @@ include __DIR__ . '/partials/header.php';
                     </p>
                     <ul style="color: var(--color-text-secondary); margin: 0; padding-left: 1.25rem;">
                         <li><code
-                                style="background: var(--color-bg-tertiary); padding: 0.125rem 0.375rem; border-radius: 4px;">config.php</code>
-                            - <?php _e('update_config_desc'); ?></li>
-                        <li><code
                                 style="background: var(--color-bg-tertiary); padding: 0.125rem 0.375rem; border-radius: 4px;">storage/</code>
                             - <?php _e('update_storage_desc'); ?></li>
                         <li><code
@@ -548,47 +545,39 @@ include __DIR__ . '/partials/header.php';
         toc.classList.toggle('collapsed');
         localStorage.setItem('howto_toc_collapsed', toc.classList.contains('collapsed'));
     }
-
-    // Auto-generate Table of Contents from section h2 elements
-    document.addEventListener('DOMContentLoaded', function () {
+     // Auto-generate Table of Contents from section h2 elements
+    document.addEventListener('DOMContentLoaded', function()  {
         const tocList = document.getElementById('toc-list');
         const sections = document.querySelectorAll('.howto-section[id]');
-
-        let counter = 1;
+         let counter = 1;
         sections.forEach(section => {
             const h2 = section.querySelector('h2');
             if (h2) {
                 const svg = h2.querySelector('svg');
                 const text = h2.textContent.trim();
                 const id = section.id;
-
-                const li = document.createElement('li');
+                 const li = document.createElement('li');
                 const a = document.createElement('a');
                 a.href = '#' + id;
-
-                // Add number
+                 // Add number
                 const num = document.createElement('span');
                 num.className = 'toc-number';
                 num.textContent = counter++;
                 a.appendChild(num);
-
-                // Add text
+                 // Add text
                 const span = document.createElement('span');
                 span.textContent = text;
                 a.appendChild(span);
-
-                // Smooth scroll
-                a.addEventListener('click', function (e) {
+                 // Smooth scroll
+                a.addEventListener('click', function(e)  {
                     e.preventDefault();
                     document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
                 });
-
-                li.appendChild(a);
+                 li.appendChild(a);
                 tocList.appendChild(li);
             }
         });
-
-        // Restore TOC state
+         // Restore TOC state
         if (localStorage.getItem('howto_toc_collapsed') === 'true') {
             document.getElementById('toc').classList.add('collapsed');
         }

@@ -66,7 +66,7 @@ include __DIR__ . '/partials/header.php';
                 </div>
             </div>
 
-            <!-- Session & DB Maintenance -->
+            <!-- Session Stats -->
             <div class="card mb-4"
                 style="background: var(--color-bg-secondary); margin-bottom: 2rem; border-color: var(--color-border);">
                 <div class="card-body">
@@ -77,7 +77,7 @@ include __DIR__ . '/partials/header.php';
                             <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
                             <path d="M7 11V7a5 5 0 0110 0v4" />
                         </svg>
-                        <?php _e('session_stats'); ?> & <?php _e('db_maintenance'); ?>
+                        <?php _e('session_stats'); ?>
                     </h2>
 
                     <div class="flex items-center gap-6 mb-4" style="flex-wrap: wrap;">
@@ -92,59 +92,30 @@ include __DIR__ . '/partials/header.php';
                             <div class="text-xl font-bold">
                                 <?php echo FileHandler::formatSize($sessionStats['size'] ?? 0); ?></div>
                         </div>
-                        <div>
-                            <div class="text-sm font-bold" style="color: var(--color-text-muted);">
-                                <?php _e('db_size'); ?></div>
-                            <div class="text-xl font-bold">
-                                <?php echo FileHandler::formatSize(Database::getDatabaseSize()); ?></div>
+                        <div style="margin-left: auto;">
+                            <form method="post"
+                                onsubmit="return confirm('<?php echo htmlspecialchars(__('confirm_cleanup_sessions')); ?>');"
+                                style="display: flex; align-items: center; gap: 0.75rem;">
+                                <input type="hidden" name="action" value="cleanup_sessions">
+                                <input type="hidden" name="csrf_token"
+                                    value="<?php echo htmlspecialchars($csrfToken); ?>">
+                                <button type="submit" class="btn btn-secondary btn-sm" <?php echo ($sessionStats['count'] ?? 0) === 0 ? 'disabled' : ''; ?>>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <polyline points="3 6 5 6 21 6"></polyline>
+                                        <path
+                                            d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                                        </path>
+                                    </svg>
+                                    <?php _e('cleanup_sessions'); ?>
+                                </button>
+                                <span class="text-xs"
+                                    style="color: var(--color-text-muted);"><?php _e('cleanup_sessions_desc'); ?></span>
+                            </form>
                         </div>
                     </div>
-
-                    <!-- Maintenance Buttons -->
-                    <div style="display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
-                        <form method="post"
-                            onsubmit="return confirm('<?php echo htmlspecialchars(__('confirm_cleanup_sessions')); ?>');"
-                            style="display: flex; align-items: center; gap: 0.5rem;">
-                            <input type="hidden" name="action" value="cleanup_sessions">
-                            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
-                            <button type="submit" class="btn btn-secondary btn-sm">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2">
-                                    <polyline points="3 6 5 6 21 6"></polyline>
-                                    <path
-                                        d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
-                                    </path>
-                                </svg>
-                                <?php _e('run_maintenance'); ?>
-                            </button>
-                            <span class="text-xs"
-                                style="color: var(--color-text-muted);"><?php _e('run_maintenance_desc'); ?></span>
-                        </form>
-                    </div>
-
-                    <div style="display: flex; flex-wrap: wrap; gap: 1rem;">
-                        <form method="post"
-                            onsubmit="return confirm('<?php echo htmlspecialchars(__('confirm_vacuum')); ?>');"
-                            style="display: flex; align-items: center; gap: 0.5rem;">
-                            <input type="hidden" name="action" value="run_vacuum">
-                            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
-                            <button type="submit" class="btn btn-sm"
-                                style="background: var(--color-warning); color: white;">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2">
-                                    <ellipse cx="12" cy="5" rx="9" ry="3" />
-                                    <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
-                                    <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
-                                </svg>
-                                <?php _e('run_vacuum'); ?>
-                            </button>
-                            <span class="text-xs"
-                                style="color: var(--color-text-muted);"><?php _e('run_vacuum_desc'); ?></span>
-                        </form>
-                    </div>
-
-                    <p class="text-xs" style="color: var(--color-text-muted); margin-top: 1rem;">
-                        Session: <?php echo htmlspecialchars(session_save_path()); ?> (Lifetime:
+                    <p class="text-xs" style="color: var(--color-text-muted);">
+                        Config: <?php echo htmlspecialchars(session_save_path()); ?> (Lifetime:
                         <?php echo SESSION_LIFETIME / 60; ?> min)
                     </p>
                 </div>
