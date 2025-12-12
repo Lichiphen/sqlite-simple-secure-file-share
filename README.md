@@ -15,6 +15,7 @@ A simple, secure, and self-hosted file sharing system with password protection.
 - 🔒 **Password Protection** - Secure your shared files with optional password
 - 📊 **Download Counter** - Track how many times files have been downloaded
 - 📦 **ZIP Download** - Download multiple files as a single ZIP archive
+- 📁 **Upload Mode** - Restrict uploads to images only, archives only, or custom extensions
 - 🛡️ **Direct Link Prevention** - Prevent unauthorized access via direct URLs
 - 🔐 **Hidden Admin URL** - Customize admin panel URL to hide from attackers
 - 🌙 **Dark Mode Support** - Automatic theme switching based on system preference
@@ -38,7 +39,9 @@ A simple, secure, and self-hosted file sharing system with password protection.
 
 ## Configuration
 
-Edit `config.php` to customize:
+Edit `config.php` to customize your installation. All user settings are at the top of the file.
+
+### 🔑 Basic Settings
 
 ```php
 // Admin password (CHANGE THIS!)
@@ -46,19 +49,49 @@ define('ADMIN_PASSWORD', 'your-secure-password');
 
 // Custom admin URL (recommended for security)
 // Example: 'admin' → 'my-secret-panel-xyz123'
+// After changing, access via /my-secret-panel-xyz123
 define('ADMIN_URL_PATH', 'my-secret-panel');
-
-// Maximum upload size (in bytes)
-define('MAX_UPLOAD_SIZE', 100 * 1024 * 1024); // 100MB
-// Examples:
-//   50 * 1024 * 1024   = 50MB
-//   100 * 1024 * 1024  = 100MB
-//   500 * 1024 * 1024  = 500MB
-//   1024 * 1024 * 1024 = 1GB
-//   2 * 1024 * 1024 * 1024 = 2GB
 
 // Session lifetime (in seconds)
 define('SESSION_LIFETIME', 3600); // 1 hour
+
+// Default language ('en' or 'ja')
+define('DEFAULT_LANGUAGE', 'ja');
+```
+
+### 📁 Upload Settings
+
+```php
+// Maximum upload size (in bytes)
+define('MAX_UPLOAD_SIZE', 100 * 1024 * 1024); // 100MB
+```
+
+| Size | Value |
+|------|-------|
+| 50MB | `50 * 1024 * 1024` |
+| 100MB | `100 * 1024 * 1024` |
+| 500MB | `500 * 1024 * 1024` |
+| 1GB | `1024 * 1024 * 1024` |
+
+### 🎨 Upload Mode (File Type Restriction)
+
+Control what types of files users can upload:
+
+```php
+define('UPLOAD_MODE', 'ALL');
+```
+
+| Mode | Description | Allowed Extensions |
+|------|-------------|-------------------|
+| `'ALL'` | All files allowed (default) | Any file type |
+| `'IMAGE_ONLY'` | Images only | jpg, jpeg, png, gif, webp, heic, avif, tiff |
+| `'ARCHIVE_ONLY'` | Archives only | zip, 7z, rar, tar, gz |
+| `'CUSTOM'` | Custom extensions | Specify in `CUSTOM_UPLOAD_EXTENSIONS` |
+
+**Custom Mode Example:**
+```php
+define('UPLOAD_MODE', 'CUSTOM');
+define('CUSTOM_UPLOAD_EXTENSIONS', 'jpg,jpeg,png,psd,pdf,zip');
 ```
 
 > **Note**: For large file uploads, you may also need to adjust your server's `php.ini` settings:
@@ -170,6 +203,7 @@ This project is licensed under the Lichiphen Proprietary License v1.0 - see the 
 - 🔒 **パスワード保護** - 共有ファイルをパスワードで保護
 - 📊 **ダウンロードカウンター** - ダウンロード回数を自動追跡
 - 📦 **ZIPダウンロード** - 複数ファイルをZIPで一括ダウンロード
+- 📁 **アップロードモード** - 画像のみ、圧縮ファイルのみ、またはカスタム拡張子に制限可能
 - 🛡️ **直リンク防止** - URLの直接アクセスによる不正ダウンロードを防止
 - 🔐 **管理画面URL隠蔽** - 管理パネルのURLをカスタマイズして攻撃者から隠蔽
 - 🌙 **ダークモード対応** - システム設定に応じた自動テーマ切り替え
@@ -193,7 +227,9 @@ This project is licensed under the Lichiphen Proprietary License v1.0 - see the 
 
 ## 設定
 
-`config.php` を編集してカスタマイズ：
+`config.php` を編集してカスタマイズできます。ユーザー設定はファイルの先頭にまとまっています。
+
+### 🔑 基本設定
 
 ```php
 // 管理者パスワード（必ず変更してください！）
@@ -201,19 +237,49 @@ define('ADMIN_PASSWORD', 'your-secure-password');
 
 // 管理画面のURL（セキュリティのため変更を推奨）
 // 例: 'admin' → 'my-secret-panel-xyz123'
+// 変更後は /my-secret-panel-xyz123 でアクセス
 define('ADMIN_URL_PATH', 'my-secret-panel');
-
-// 最大アップロードサイズ（バイト単位）
-define('MAX_UPLOAD_SIZE', 100 * 1024 * 1024); // 100MB
-// 設定例:
-//   50 * 1024 * 1024   = 50MB
-//   100 * 1024 * 1024  = 100MB
-//   500 * 1024 * 1024  = 500MB
-//   1024 * 1024 * 1024 = 1GB
-//   2 * 1024 * 1024 * 1024 = 2GB
 
 // セッション有効時間（秒単位）
 define('SESSION_LIFETIME', 3600); // 1時間
+
+// デフォルト言語 ('en' または 'ja')
+define('DEFAULT_LANGUAGE', 'ja');
+```
+
+### 📁 アップロード設定
+
+```php
+// 最大アップロードサイズ（バイト単位）
+define('MAX_UPLOAD_SIZE', 100 * 1024 * 1024); // 100MB
+```
+
+| サイズ | 設定値 |
+|--------|--------|
+| 50MB | `50 * 1024 * 1024` |
+| 100MB | `100 * 1024 * 1024` |
+| 500MB | `500 * 1024 * 1024` |
+| 1GB | `1024 * 1024 * 1024` |
+
+### 🎨 アップロードモード（ファイル種別の制限）
+
+アップロードできるファイルの種類を制限できます：
+
+```php
+define('UPLOAD_MODE', 'ALL');
+```
+
+| モード | 説明 | 許可される拡張子 |
+|--------|------|-----------------|
+| `'ALL'` | すべてのファイルを許可（デフォルト） | 制限なし |
+| `'IMAGE_ONLY'` | 画像ファイルのみ | jpg, jpeg, png, gif, webp, heic, avif, tiff |
+| `'ARCHIVE_ONLY'` | 圧縮ファイルのみ | zip, 7z, rar, tar, gz |
+| `'CUSTOM'` | カスタム指定 | `CUSTOM_UPLOAD_EXTENSIONS`で指定 |
+
+**CUSTOMモードの使用例：**
+```php
+define('UPLOAD_MODE', 'CUSTOM');
+define('CUSTOM_UPLOAD_EXTENSIONS', 'jpg,jpeg,png,psd,pdf,zip');
 ```
 
 > **補足**: 大容量ファイルをアップロードする場合は、サーバーの `php.ini` 設定も調整が必要な場合があります：
