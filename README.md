@@ -2,6 +2,9 @@
 
 A simple, secure, and self-hosted file sharing system with password protection.
 
+[![GitLab](https://img.shields.io/badge/GitLab-312152?style=for-the-badge&logo=gitlab&logoColor=white)](https://gitlab.com/lichiphen/sqlite-simple-secure-file-share)
+[![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Lichiphen/sqlite-simple-secure-file-share)
+
 [![License: Lichiphen Proprietary](https://img.shields.io/badge/License-Lichiphen%20Proprietary-purple.svg)](LICENSE)
 
 ## 📺 Demo Video
