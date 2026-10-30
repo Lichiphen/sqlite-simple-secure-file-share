@@ -2,6 +2,9 @@
 
 A simple, secure, and self-hosted file sharing system with password protection.
 
+> [!NOTE]
+> **Security status (as of 2026-10-30):** v1.6.0 fixes every security issue identified up to 2026-10-30 and keeps security risks low — signed share cookies, random on-disk file names, CSP with nonces, login and password attempt limits, rejection of the default admin password, Host header validation and signed download links. This is not a guarantee that no vulnerabilities exist; keep the app and PHP up to date and apply the [Nginx rules](#nginx-configuration) when using Nginx.
+
 [![GitLab](https://img.shields.io/badge/GitLab-312152?style=for-the-badge&logo=gitlab&logoColor=white)](https://gitlab.com/lichiphen/sqlite-simple-secure-file-share)
 [![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Lichiphen/sqlite-simple-secure-file-share)
 
@@ -257,6 +260,9 @@ This project is licensed under the Lichiphen Proprietary License v1.0 - see the 
 # Simple Secure File Share（日本語）
 
 シンプルで安全なセルフホスト型ファイル共有システムです。
+
+> [!NOTE]
+> **セキュリティ対策の状況（2026-10-30 時点）:** v1.6.0 では、2026-10-30 までに確認したセキュリティ上の問題をすべて修正し、セキュリティリスクを抑えています。署名付きの共有 Cookie、ランダムな保存ファイル名、nonce 付きの CSP、ログイン・パスワード試行回数の制限、初期パスワードの拒否、Host ヘッダーの検証、署名付きダウンロードリンクなどに対応しています。脆弱性が一切ないことを保証するものではないため、アプリと PHP は最新版でお使いください。Nginx の場合は [Nginx 設定](#nginx-設定) も必ず追加してください。
 
 ## 📺 デモ動画
 
