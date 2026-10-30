@@ -227,6 +227,22 @@ RewriteBase /simple-secure-file-share/
 
 > **Symptom**: If you see the WordPress "Page not found" error instead of the cat 404 page when accessing `/admin`, this is likely the cause.
 
+**Nginx:** the [deny rules](#nginx-configuration) start with `^/storage` etc. and do **not** match `/simple-secure-file-share/storage/...`. Add the subdirectory to every path, otherwise the database, session files and uploads can be downloaded:
+
+```nginx
+location ~ ^/simple-secure-file-share/(storage|database|src|templates|lang)(/|$) { deny all; return 404; }
+location ~ /\.(?!well-known/) { deny all; return 404; }
+location ~ ^/simple-secure-file-share/(config|version)\.php$ { deny all; return 404; }
+location /simple-secure-file-share/assets/ { try_files $uri =404; }
+location /simple-secure-file-share/ { try_files $uri /simple-secure-file-share/index.php$is_args$args; }
+location = /simple-secure-file-share/index.php {
+    include fastcgi_params;
+    fastcgi_param SCRIPT_FILENAME $document_root/simple-secure-file-share/index.php;
+    fastcgi_pass unix:/run/php/php-fpm.sock;
+}
+location ~ \.php$ { return 404; }
+```
+
 ## License
 
 This project is licensed under the Lichiphen Proprietary License v1.0 - see the [LICENSE](LICENSE) file for details.
@@ -461,6 +477,22 @@ RewriteBase /simple-secure-file-share/
 ```
 
 > **症状**: `/admin`にアクセスした際、猫の404ページではなくWordPressの「ページが見つかりません」が表示される場合、これが原因です。
+
+**Nginx の場合:** [Nginx 設定](#nginx-設定) の拒否ルールは `^/storage` などルート前提のため、`/simple-secure-file-share/storage/...` には効きません。すべてのパスにサブディレクトリを付けてください。付けないとデータベース・セッションファイル・アップロードファイルが取得できてしまいます：
+
+```nginx
+location ~ ^/simple-secure-file-share/(storage|database|src|templates|lang)(/|$) { deny all; return 404; }
+location ~ /\.(?!well-known/) { deny all; return 404; }
+location ~ ^/simple-secure-file-share/(config|version)\.php$ { deny all; return 404; }
+location /simple-secure-file-share/assets/ { try_files $uri =404; }
+location /simple-secure-file-share/ { try_files $uri /simple-secure-file-share/index.php$is_args$args; }
+location = /simple-secure-file-share/index.php {
+    include fastcgi_params;
+    fastcgi_param SCRIPT_FILENAME $document_root/simple-secure-file-share/index.php;
+    fastcgi_pass unix:/run/php/php-fpm.sock;
+}
+location ~ \.php$ { return 404; }
+```
 
 ## ライセンス
 
