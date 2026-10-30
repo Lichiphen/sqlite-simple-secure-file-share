@@ -164,6 +164,23 @@ If you're upgrading from v1.4.x or earlier:
 3. Extract and upload all files via FTP (these won't include config.php, storage/, database/)
 4. Verify the admin panel and existing share links work correctly
 
+### 🔏 Verifying Downloads
+
+Release ZIPs from v1.6.0 on are signed with Lichiphen's Ed25519 key, and each ZIP has a `.sig` file next to it on the Releases page. A valid signature shows the file was made by Lichiphen — even if the GitHub / GitLab account were ever taken over, a forged ZIP cannot carry it.
+
+1. Download the public key from **https://lichiphen.com/keys/release-signing.txt** and save it as `allowed_signers`. Always take it from lichiphen.com, not from this repository; if they ever differ, trust lichiphen.com.
+2. Its fingerprint is `SHA256:4OUsj5/foFsud4sZEnMUIDmxTMH1pqU7kH3WHa6RUp4`.
+3. Put the ZIP, its `.sig` and `allowed_signers` in one folder and run (`ssh-keygen` ships with Windows 10+, macOS and Linux):
+
+```bash
+# Windows (PowerShell / Command Prompt)
+cmd /c "ssh-keygen -Y verify -f allowed_signers -I lichiphen -n file -s simple-secure-file-share-v1.6.0-update.zip.sig < simple-secure-file-share-v1.6.0-update.zip"
+# macOS / Linux
+ssh-keygen -Y verify -f allowed_signers -I lichiphen -n file -s simple-secure-file-share-v1.6.0-update.zip.sig < simple-secure-file-share-v1.6.0-update.zip
+```
+
+`Good "file" signature for lichiphen` means the file is genuine. If you see anything else, do not use the file and contact Lichiphen. Git tags from v1.6.0 on are signed with the same key.
+
 ## Directory Structure
 
 ```
@@ -417,6 +434,23 @@ v1.4.x以前からアップグレードする場合：
 2. [Releases](https://gitlab.com/lichiphen/sqlite-simple-secure-file-share/-/releases)から**アップデート用パッケージ**をダウンロード
 3. 解凍してFTPで全ファイルをアップロード（config.php, storage/, database/は含まれていません）
 4. 管理画面と既存の共有リンクが正常に動作することを確認
+
+### 🔏 ダウンロードしたファイルの確認
+
+v1.6.0 以降の配布 ZIP には Lichiphen の Ed25519 鍵で署名しており、Releases のページで各 ZIP の隣に `.sig` ファイルを置いています。署名が正しければ、Lichiphen が作ったファイルだと確かめられます。万一 GitHub / GitLab のアカウントが乗っ取られても、偽の ZIP に正しい署名は付けられません。
+
+1. 公開鍵を **https://lichiphen.com/keys/release-signing.txt** からダウンロードし、`allowed_signers` という名前で保存します。公開鍵は必ず lichiphen.com から取得してください（このリポジトリの内容と食い違う場合は lichiphen.com が正です）。
+2. 公開鍵の指紋は `SHA256:4OUsj5/foFsud4sZEnMUIDmxTMH1pqU7kH3WHa6RUp4` です。
+3. ZIP・`.sig`・`allowed_signers` を同じフォルダに置き、次を実行します（`ssh-keygen` は Windows 10 以降・macOS・Linux に標準で入っています）。
+
+```bash
+# Windows（PowerShell / コマンドプロンプト）
+cmd /c "ssh-keygen -Y verify -f allowed_signers -I lichiphen -n file -s simple-secure-file-share-v1.6.0-update.zip.sig < simple-secure-file-share-v1.6.0-update.zip"
+# macOS / Linux
+ssh-keygen -Y verify -f allowed_signers -I lichiphen -n file -s simple-secure-file-share-v1.6.0-update.zip.sig < simple-secure-file-share-v1.6.0-update.zip
+```
+
+`Good "file" signature for lichiphen` と表示されれば本物です。それ以外が表示された場合は使わずに、Lichiphen までご連絡ください。v1.6.0 以降の Git タグにも同じ鍵で署名しています。
 
 ## ディレクトリ構成
 
