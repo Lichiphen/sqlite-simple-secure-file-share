@@ -12,7 +12,12 @@
 // ★ ユーザー設定（ここを編集してください）★
 // ============================================================================
 
-// 管理者パスワード（本番環境では必ず変更してください）
+// 管理者パスワード
+// ★推奨: ハッシュで設定してください（平文を config.php に置かない）
+//   生成方法: php -r "echo password_hash('your-strong-password', PASSWORD_DEFAULT), PHP_EOL;"
+//   ADMIN_PASSWORD_HASH を設定すると ADMIN_PASSWORD は無視されます。
+// ※ 初期値 'admin' や 12文字未満のパスワードではログインできません（セキュリティ保護）
+define('ADMIN_PASSWORD_HASH', '');
 define('ADMIN_PASSWORD', 'admin');
 
 // 管理画面のURL（セキュリティのため変更を推奨）
@@ -45,6 +50,14 @@ define('SESSION_LIFETIME', 3600); // 1時間
 // デフォルト言語 ('en' または 'ja')
 define('DEFAULT_LANGUAGE', 'ja');
 
+// 許可するホスト名（Host ヘッダー偽装対策）
+// 例: ['files.example.com']  空配列の場合はホスト名の形式チェックのみ
+define('TRUSTED_HOSTS', []);
+
+// 公開URLを固定する場合に設定（例: 'https://files.example.com'）
+// 空の場合はリクエストから自動検出
+define('APP_BASE_URL', '');
+
 // ============================================================================
 // ★ 以下はシステム設定です（通常は変更不要）★
 // ============================================================================
@@ -53,55 +66,11 @@ define('DEFAULT_LANGUAGE', 'ja');
 require_once __DIR__ . '/version.php';
 
 // セキュリティ: 直接アクセス防止（可愛いエラーページを表示）
-if (basename($_SERVER['PHP_SELF']) === basename(__FILE__)) {
+if (basename($_SERVER['PHP_SELF'] ?? '') === basename(__FILE__)) {
+    define('BASE_PATH', __DIR__);
     require_once __DIR__ . '/src/no-direct-access.php';
     showNoDirectAccessError();
 }
 
-// タイムゾーン設定
-date_default_timezone_set('Asia/Tokyo');
-
-// セッション設定
-$session_dir = __DIR__ . '/storage/sessions';
-if (!is_dir($session_dir)) {
-    mkdir($session_dir, 0755, true);
-}
-ini_set('session.save_path', $session_dir);
-ini_set('session.cookie_httponly', 1);
-ini_set('session.use_strict_mode', 1);
-
-// ============================================================================
-// パス設定
-// ============================================================================
-
-define('BASE_PATH', __DIR__);
-define('STORAGE_PATH', BASE_PATH . '/storage');
-define('UPLOADS_PATH', STORAGE_PATH . '/uploads');
-define('DATABASE_PATH', STORAGE_PATH . '/database.sqlite');
-
-// ============================================================================
-// URL設定
-// ============================================================================
-
-// ベースURL（自動検出、必要に応じて手動設定）
-$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-$host = $_SERVER['HTTP_HOST'] ?? 'localhost:8080';
-// PHPビルトインサーバーではスクリプトディレクトリを含めない
-$script_dir = '';
-if (php_sapi_name() !== 'cli-server') {
-    $script_dir = dirname($_SERVER['SCRIPT_NAME']);
-    if ($script_dir === '/' || $script_dir === '\\') {
-        $script_dir = '';
-    }
-}
-define('BASE_URL', rtrim($protocol . '://' . $host . $script_dir, '/'));
-
-// ============================================================================
-// その他の設定
-// ============================================================================
-
-// パスワード認証のCookie有効期限（秒）
-define('AUTH_COOKIE_LIFETIME', 3600); // 1時間
-
-// 対応言語
-define('SUPPORTED_LANGUAGES', ['en', 'ja']);
+// システム初期化（パス・URL・セッション・セキュリティ設定）
+require_once __DIR__ . '/src/bootstrap.php';

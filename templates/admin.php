@@ -137,7 +137,7 @@ include __DIR__ . '/partials/header.php';
                     </div>
                     
                     <!-- Delete All -->
-                    <form method="post" onsubmit="return confirm('<?php echo addslashes(__('confirm_delete_all')); ?>');">
+                    <form method="post" data-confirm="<?php echo htmlspecialchars(__('confirm_delete_all'), ENT_QUOTES, 'UTF-8'); ?>">
                         <input type="hidden" name="action" value="delete_all_shares">
                         <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
                         <button type="submit" class="btn btn-sm" style="background: var(--color-error); color: white; display: flex; align-items: center; gap: 0.25rem;">

@@ -36,16 +36,24 @@ class Database
     {
         // Ensure storage directory exists
         $storage_dir = dirname(DATABASE_PATH);
-        if (!is_dir($storage_dir)) {
-            mkdir($storage_dir, 0755, true);
-        }
+        Security::ensureDirectory($storage_dir);
+
+        $isNew = !is_file(DATABASE_PATH);
 
         $pdo = new PDO('sqlite:' . DATABASE_PATH);
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+        $pdo->setAttribute(PDO::ATTR_STRINGIFY_FETCHES, false);
+
+        if ($isNew) {
+            @chmod(DATABASE_PATH, 0600);
+        }
 
         // Enable foreign keys
         $pdo->exec('PRAGMA foreign_keys = ON');
+        // 削除したデータ（パスワードハッシュ等）をファイル上でも上書き消去
+        $pdo->exec('PRAGMA secure_delete = ON');
+        $pdo->exec('PRAGMA busy_timeout = 5000');
 
         // Initialize tables
         self::initTables($pdo);
@@ -134,6 +142,30 @@ class Database
     }
 
     /**
+     * Get share by ID
+     */
+    public static function getShareById(int $id): ?array
+    {
+        $pdo = self::getInstance();
+        $stmt = $pdo->prepare('SELECT * FROM shares WHERE id = :id');
+        $stmt->execute([':id' => $id]);
+        $share = $stmt->fetch();
+        return $share ?: null;
+    }
+
+    /**
+     * Get a single file record that belongs to the share
+     */
+    public static function getFile(int $shareId, string $systemName): ?array
+    {
+        $pdo = self::getInstance();
+        $stmt = $pdo->prepare('SELECT * FROM files WHERE share_id = :share_id AND system_name = :system_name');
+        $stmt->execute([':share_id' => $shareId, ':system_name' => $systemName]);
+        $file = $stmt->fetch();
+        return $file ?: null;
+    }
+
+    /**
      * Get files for share
      */
     public static function getFilesForShare(int $shareId): array
@@ -161,7 +193,8 @@ class Database
     {
         $pdo = self::getInstance();
         $stmt = $pdo->prepare('DELETE FROM shares WHERE id = :id');
-        return $stmt->execute([':id' => $id]);
+        $stmt->execute([':id' => $id]);
+        return $stmt->rowCount() > 0;
     }
 
     /**
@@ -214,7 +247,8 @@ class Database
     {
         $pdo = self::getInstance();
         $stmt = $pdo->prepare('UPDATE shares SET password_hash = :hash WHERE id = :id');
-        return $stmt->execute([':hash' => $hash, ':id' => $id]);
+        $stmt->execute([':hash' => $hash, ':id' => $id]);
+        return $stmt->rowCount() > 0;
     }
 
     /**
@@ -224,7 +258,8 @@ class Database
     {
         $pdo = self::getInstance();
         $stmt = $pdo->prepare('DELETE FROM files WHERE share_id = :share_id AND system_name = :system_name');
-        return $stmt->execute([':share_id' => $shareId, ':system_name' => $systemName]);
+        $stmt->execute([':share_id' => $shareId, ':system_name' => $systemName]);
+        return $stmt->rowCount() > 0;
     }
 
     /**
@@ -265,7 +300,7 @@ class Database
         $shares = self::getAllShares();
         $orphans = [];
         foreach ($shares as $share) {
-            if (!in_array($share['token'], $existingFolders)) {
+            if (!in_array($share['token'], $existingFolders, true)) {
                 $orphans[] = $share;
             }
         }

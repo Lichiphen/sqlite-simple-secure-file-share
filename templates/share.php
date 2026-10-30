@@ -5,6 +5,11 @@
 
 // Ensure direct access is prevented
 if (!defined('BASE_PATH')) exit('No direct access.');
+
+// 署名付きダウンロードURLを生成
+$shareDownloadUrl = function (string $target) use ($share, $downloadSignature): string {
+    return BASE_URL . '/s/' . $share['token'] . '?' . http_build_query(['download' => $target, 'dl' => $downloadSignature]);
+};
 ?>
 <!DOCTYPE html>
 <html lang="<?php echo I18n::getCurrentLang(); ?>" data-theme="light">
@@ -12,7 +17,7 @@ if (!defined('BASE_PATH')) exit('No direct access.');
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
-    <title><?php echo htmlspecialchars($share['title']); ?> - <?php _e('file_sharing'); ?></title>
+    <title><?php echo htmlspecialchars($share['title'], ENT_QUOTES, 'UTF-8'); ?> - <?php _e('file_sharing'); ?></title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -26,7 +31,7 @@ if (!defined('BASE_PATH')) exit('No direct access.');
             <div class="flex justify-between items-center">
                 <div>
                     <p class="share-header-label"><?php _e('file_sharing'); ?></p>
-                    <h1 class="share-header-title"><?php echo htmlspecialchars($share['title']); ?></h1>
+                    <h1 class="share-header-title"><?php echo htmlspecialchars($share['title'], ENT_QUOTES, 'UTF-8'); ?></h1>
                 </div>
                 <div class="share-header-icon">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -46,11 +51,11 @@ if (!defined('BASE_PATH')) exit('No direct access.');
         // Show top download button if 7+ files
         if (count($files) >= 7): 
             $downloadUrl = count($files) > 1 
-                ? BASE_URL . '/s/' . $share['token'] . '?download=zip' 
-                : BASE_URL . '/s/' . $share['token'] . '?download=' . urlencode($files[0]['system_name']);
+                ? $shareDownloadUrl('zip')
+                : $shareDownloadUrl($files[0]['system_name']);
         ?>
         <div style="padding: 1rem; background: var(--color-bg-tertiary); border-bottom: 1px solid var(--color-border); text-align: right;">
-            <a href="<?php echo $downloadUrl; ?>" class="btn btn-dark">
+            <a href="<?php echo htmlspecialchars($downloadUrl, ENT_QUOTES, 'UTF-8'); ?>" class="btn btn-dark">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
                     <polyline points="7 10 12 15 17 10"/>
@@ -65,8 +70,8 @@ if (!defined('BASE_PATH')) exit('No direct access.');
         <div style="padding: 1.5rem; background: var(--color-bg-tertiary); border-bottom: 1px solid var(--color-border);">
             <ul class="file-list">
                 <?php foreach ($files as $file): 
-                    $singleUrl = BASE_URL . '/s/' . $share['token'] . '?download=' . urlencode($file['system_name']);
-                    $ext = strtolower(pathinfo($file['system_name'], PATHINFO_EXTENSION));
+                    $singleUrl = $shareDownloadUrl($file['system_name']);
+                    $ext = strtolower(pathinfo($file['original_name'], PATHINFO_EXTENSION));
                     
                     // Icon colors by extension
                     $iconColor = 'var(--color-text-muted)';
@@ -85,13 +90,13 @@ if (!defined('BASE_PATH')) exit('No direct access.');
                             <line x1="9" y1="15" x2="15" y2="15"/>
                         </svg>
                         <div style="min-width: 0;">
-                            <div class="file-name truncate" title="<?php echo htmlspecialchars($file['original_name']); ?>">
-                                <?php echo htmlspecialchars($file['original_name']); ?>
+                            <div class="file-name truncate" title="<?php echo htmlspecialchars($file['original_name'], ENT_QUOTES, 'UTF-8'); ?>">
+                                <?php echo htmlspecialchars($file['original_name'], ENT_QUOTES, 'UTF-8'); ?>
                             </div>
-                            <div class="file-size"><?php echo FileHandler::formatSize($file['size']); ?></div>
+                            <div class="file-size"><?php echo FileHandler::formatSize((int) $file['size']); ?></div>
                         </div>
                     </div>
-                    <a href="<?php echo $singleUrl; ?>" class="btn btn-sm" style="background: var(--color-accent-light); color: var(--color-accent);">
+                    <a href="<?php echo htmlspecialchars($singleUrl, ENT_QUOTES, 'UTF-8'); ?>" class="btn btn-sm" style="background: var(--color-accent-light); color: var(--color-accent);">
                         DL
                     </a>
                 </li>
@@ -107,10 +112,10 @@ if (!defined('BASE_PATH')) exit('No direct access.');
             
             <?php 
             $downloadUrl = count($files) > 1 
-                ? BASE_URL . '/s/' . $share['token'] . '?download=zip' 
-                : BASE_URL . '/s/' . $share['token'] . '?download=' . urlencode($files[0]['system_name']);
+                ? $shareDownloadUrl('zip')
+                : $shareDownloadUrl($files[0]['system_name']);
             ?>
-            <a href="<?php echo $downloadUrl; ?>" class="btn <?php echo count($files) > 1 ? 'btn-dark' : 'btn-primary'; ?>">
+            <a href="<?php echo htmlspecialchars($downloadUrl, ENT_QUOTES, 'UTF-8'); ?>" class="btn <?php echo count($files) > 1 ? 'btn-dark' : 'btn-primary'; ?>">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
                     <polyline points="7 10 12 15 17 10"/>

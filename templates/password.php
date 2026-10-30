@@ -12,7 +12,7 @@ if (!defined('BASE_PATH')) exit('No direct access.');
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
-    <title><?php _e('password_authentication'); ?> - <?php echo htmlspecialchars($share['title']); ?></title>
+    <title><?php _e('password_authentication'); ?> - <?php echo htmlspecialchars($share['title'], ENT_QUOTES, 'UTF-8'); ?></title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -38,13 +38,13 @@ if (!defined('BASE_PATH')) exit('No direct access.');
         <!-- Body -->
         <div class="card-body">
             <p class="text-sm text-center mb-4" style="color: var(--color-text-secondary);">
-                "<strong><?php echo htmlspecialchars($share['title']); ?></strong>"<br>
+                "<strong><?php echo htmlspecialchars($share['title'], ENT_QUOTES, 'UTF-8'); ?></strong>"<br>
                 <?php _e('password_required_message'); ?>
             </p>
             
             <?php if ($error): ?>
             <div class="alert alert-error mb-4">
-                <?php _e('incorrect_password'); ?>
+                <?php echo htmlspecialchars(__(is_string($error) ? $error : 'incorrect_password'), ENT_QUOTES, 'UTF-8'); ?>
             </div>
             <?php endif; ?>
             
@@ -52,7 +52,7 @@ if (!defined('BASE_PATH')) exit('No direct access.');
                 <div class="form-group">
                     <label for="sfs-password" class="sr-only"><?php _e('password'); ?></label>
                     <div style="position: relative;">
-                        <input type="text" name="sfs_password" id="sfs-password" required
+                        <input type="text" name="sfs_password" id="sfs-password" required maxlength="1024"
                                class="form-input password-masked"
                                placeholder="<?php _e('enter_password'); ?>"
                                autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"

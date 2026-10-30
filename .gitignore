@@ -1,0 +1,7 @@
+# Runtime data (never commit: contains uploads, sessions, secrets)
+storage/*
+!storage/.htaccess
+!storage/README.txt
+database/*
+!database/.htaccess
+!database/README.txt

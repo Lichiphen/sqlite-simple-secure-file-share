@@ -203,7 +203,7 @@ include __DIR__ . '/partials/header.php';
 
             <!-- Auto-generated Table of Contents -->
             <div class="toc-container" id="toc">
-                <div class="toc-header" onclick="toggleToc()">
+                <div class="toc-header" data-sfs-toggle-toc>
                     <h3>
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2">
@@ -541,7 +541,7 @@ include __DIR__ . '/partials/header.php';
     </div>
 </main>
 
-<script>
+<script <?php echo Security::nonceAttr(); ?>>
     // Toggle Table of Contents
     function toggleToc() {
         const toc = document.getElementById('toc');
@@ -551,6 +551,9 @@ include __DIR__ . '/partials/header.php';
 
     // Auto-generate Table of Contents from section h2 elements
     document.addEventListener('DOMContentLoaded', function () {
+        const tocHeader = document.querySelector('[data-sfs-toggle-toc]');
+        if (tocHeader) tocHeader.addEventListener('click', toggleToc);
+
         const tocList = document.getElementById('toc-list');
         const sections = document.querySelectorAll('.howto-section[id]');
 

@@ -18,7 +18,7 @@ if (!defined('BASE_PATH')) exit('No direct access.');
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/style.css?v=<?php echo APP_VERSION; ?>">
-    <script>
+    <script <?php echo Security::nonceAttr(); ?>>
         (function() {
             const saved = localStorage.getItem('sfs_theme');
             const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;

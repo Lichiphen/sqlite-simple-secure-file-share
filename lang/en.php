@@ -21,6 +21,9 @@ return [
     'password' => 'Password',
     'login' => 'Login',
     'logout' => 'Logout',
+    'too_many_attempts' => 'Too many failed attempts. Please wait 15 minutes and try again.',
+    'invalid_request' => 'Your session has expired. Please reload the page and try again.',
+    'admin_password_insecure' => 'Login is disabled: the admin password is still the default or too short. Set ADMIN_PASSWORD_HASH (recommended) or a password of 12+ characters in config.php.',
     'login_failed' => 'Login failed. Incorrect password.',
     'login_required' => 'Please login to access this page.',
 

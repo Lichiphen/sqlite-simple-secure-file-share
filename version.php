@@ -9,4 +9,4 @@
  */
 
 // アプリバージョン（CSS/JSキャッシュバスティング用）
-define('APP_VERSION', '1.5.0');
+define('APP_VERSION', '1.6.0');

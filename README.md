@@ -35,8 +35,14 @@ A simple, secure, and self-hosted file sharing system with password protection.
 
 1. Download or clone this repository
 2. Upload all files to your web server
-3. Access `/admin` and login with the default password: `admin`
-4. **Change the default password immediately** in `config.php`
+3. **Set the admin password in `config.php` before first login.** The default `admin` (or any password shorter than 12 characters) is rejected and login stays disabled until you change it. Using a hash is recommended:
+   ```bash
+   php -r "echo password_hash('your-strong-password', PASSWORD_DEFAULT), PHP_EOL;"
+   ```
+   Paste the output into `ADMIN_PASSWORD_HASH`.
+4. Set `TRUSTED_HOSTS` to your domain (e.g. `['files.example.com']`).
+5. Access `/admin` (or your custom `ADMIN_URL_PATH`) and log in.
+6. **Nginx users**: add the deny rules in [Nginx Configuration](#nginx-configuration). Without them the database, sessions and uploaded files are exposed.
 
 > **Note**: The `storage/` and `database/` directories are created automatically. If you encounter permission errors, check that your web server has write access to these directories.
 
@@ -47,8 +53,13 @@ Edit `config.php` to customize your installation. All user settings are at the t
 ### 🔑 Basic Settings
 
 ```php
-// Admin password (CHANGE THIS!)
+// Admin password hash (recommended). When set, ADMIN_PASSWORD is ignored.
+define('ADMIN_PASSWORD_HASH', '$2y$10$...');
+// Plain-text admin password (12+ characters, default 'admin' is rejected)
 define('ADMIN_PASSWORD', 'your-secure-password');
+
+// Allowed host names (Host header injection protection)
+define('TRUSTED_HOSTS', ['files.example.com']);
 
 // Custom admin URL (recommended for security)
 // Example: 'admin' → 'my-secret-panel-xyz123'
@@ -120,6 +131,14 @@ When updating, **DO NOT overwrite** these files/folders:
 - `storage/` - Contains all uploaded files
 - `database/` - Contains share information and settings
 
+### 🛡️ Upgrading to v1.6.0 (Security Update)
+
+- Your existing `config.php` keeps working — all security initialisation now lives in `src/bootstrap.php`.
+- **Login is refused while `ADMIN_PASSWORD` is `admin` or shorter than 12 characters.** Set a strong password or `ADMIN_PASSWORD_HASH` before updating.
+- Optionally copy the new settings (`ADMIN_PASSWORD_HASH`, `TRUSTED_HOSTS`, `APP_BASE_URL`) from the new `config.php`.
+- Share-page visitors need to enter the share password once more (the authentication cookie format changed).
+- Nginx users must add the [deny rules](#nginx-configuration).
+
 ### 🔄 Upgrading to v1.5.0 (Breaking Change)
 
 **v1.5.0 introduces `version.php`** - Version info is now separated from `config.php`.
@@ -158,13 +177,41 @@ simple-share/
 
 ## Security Features
 
-- Passwords are hashed using bcrypt
-- Direct file access is blocked via .htaccess
-- Cookie-based authentication with expiration
-- Referer check for download requests
-- Customizable admin URL path to prevent discovery
-- HTTPS redirect support (enable in .htaccess)
-- Cute but firm error pages for unauthorized access attempts
+- Share passwords are hashed with bcrypt (`password_hash`)
+- Share authentication cookies are HMAC-signed with a per-installation secret (`storage/.app_secret`), expire, and are revoked when the password changes
+- Brute-force protection: admin login (5 attempts / 15 min) and share passwords (10 attempts / 15 min per IP)
+- Default / short admin passwords are rejected; `ADMIN_PASSWORD_HASH` supported
+- CSRF protection on every state-changing request (including login and logout)
+- Uploaded files are stored under random names with a `.dat` extension — never with the user-supplied name — so they can never be executed or interpreted by the web server
+- Downloads are always `Content-Disposition: attachment` with `X-Content-Type-Options: nosniff` and a sandbox CSP
+- Download links are HMAC-signed and time-limited (direct-link prevention without relying on the Referer header)
+- Strict Content Security Policy with per-request nonces, `X-Frame-Options: DENY`, `Referrer-Policy`, HSTS (on HTTPS)
+- Admin session cookie is `HttpOnly`, `SameSite=Strict`, `Secure` (on HTTPS) and scoped to the admin path
+- Host header validation (`TRUSTED_HOSTS`)
+- Path traversal protection for every file operation
+- Errors are logged, never displayed (`APP_DEBUG` to enable display)
+- Direct access to `storage/`, `database/`, `src/`, `templates/`, `lang/` and dot files is blocked (Apache `.htaccess`, Nginx sample below, PHP built-in server router)
+
+### Nginx Configuration
+
+```nginx
+# Nginx では .htaccess が無効なため、必ず以下を server ブロックに追加してください
+# (Nginx ignores .htaccess — these rules are REQUIRED)
+location ~ ^/(storage|database|src|templates|lang)(/|$) { deny all; return 404; }
+location ~ /\.(?!well-known/) { deny all; return 404; }
+location ~ ^/(config|version)\.php$ { deny all; return 404; }
+location /assets/ { try_files $uri =404; }
+location / { try_files $uri /index.php$is_args$args; }
+location = /index.php {
+    include fastcgi_params;
+    fastcgi_param SCRIPT_FILENAME $document_root/index.php;
+    fastcgi_pass unix:/run/php/php-fpm.sock;
+}
+# index.php 以外の .php は実行しない
+location ~ \.php$ { return 404; }
+```
+
+> The PHP built-in server (`php -S`) is for local development only.
 
 ## Subdirectory Installation (WordPress Coexistence)
 
@@ -223,8 +270,14 @@ This project is licensed under the Lichiphen Proprietary License v1.0 - see the 
 
 1. リポジトリをダウンロードまたはクローン
 2. 全ファイルをWebサーバーにアップロード
-3. `/admin` にアクセスし、デフォルトパスワード `admin` でログイン
-4. **すぐに `config.php` でパスワードを変更してください**
+3. **初回ログイン前に `config.php` で管理者パスワードを設定してください。** 初期値 `admin` や12文字未満のパスワードは拒否され、変更するまでログインできません。ハッシュでの設定を推奨します:
+   ```bash
+   php -r "echo password_hash('your-strong-password', PASSWORD_DEFAULT), PHP_EOL;"
+   ```
+   出力を `ADMIN_PASSWORD_HASH` に貼り付けます。
+4. `TRUSTED_HOSTS` に自分のドメインを設定（例: `['files.example.com']`）
+5. `/admin`（または変更した `ADMIN_URL_PATH`）にアクセスしてログイン
+6. **Nginx の場合**: [Nginx 設定](#nginx-設定) の拒否ルールを必ず追加してください。追加しないとデータベース・セッション・アップロードファイルが外部から取得可能になります。
 
 > **補足**: `storage/` と `database/` ディレクトリは自動作成されます。エラーが出る場合は、これらのディレクトリに書き込み権限があるか確認してください。
 
@@ -235,8 +288,13 @@ This project is licensed under the Lichiphen Proprietary License v1.0 - see the 
 ### 🔑 基本設定
 
 ```php
-// 管理者パスワード（必ず変更してください！）
+// 管理者パスワードのハッシュ（推奨）。設定すると ADMIN_PASSWORD は無視されます
+define('ADMIN_PASSWORD_HASH', '$2y$10$...');
+// 平文の管理者パスワード（12文字以上。初期値 'admin' は拒否されます）
 define('ADMIN_PASSWORD', 'your-secure-password');
+
+// 許可するホスト名（Host ヘッダー偽装対策）
+define('TRUSTED_HOSTS', ['files.example.com']);
 
 // 管理画面のURL（セキュリティのため変更を推奨）
 // 例: 'admin' → 'my-secret-panel-xyz123'
@@ -308,6 +366,14 @@ define('CUSTOM_UPLOAD_EXTENSIONS', 'jpg,jpeg,png,psd,pdf,zip');
 - `storage/` - アップロードされた全ファイルが保存されています
 - `database/` - 共有情報や設定が保存されています
 
+### 🛡️ v1.6.0へのアップグレード（セキュリティアップデート）
+
+- 既存の `config.php` はそのまま使えます（セキュリティ関連の初期化は `src/bootstrap.php` に移動しました）。
+- **`ADMIN_PASSWORD` が `admin` のまま、または12文字未満の場合はログインできません。** アップデート前に強力なパスワードか `ADMIN_PASSWORD_HASH` を設定してください。
+- 必要に応じて新しい `config.php` の設定項目（`ADMIN_PASSWORD_HASH`、`TRUSTED_HOSTS`、`APP_BASE_URL`）を追記してください。
+- 共有ページの閲覧者は、認証Cookie形式の変更により一度だけパスワードの再入力が必要です。
+- Nginx をお使いの場合は [拒否ルール](#nginx-設定) を必ず追加してください。
+
 ### 🔄 v1.5.0へのアップグレード（重要な変更あり）
 
 **v1.5.0で`version.php`が追加されました** - バージョン情報が`config.php`から分離されました。
@@ -346,13 +412,41 @@ simple-share/
 
 ## セキュリティ機能
 
-- パスワードはbcryptでハッシュ化
-- .htaccessによる直接ファイルアクセスのブロック
-- 有効期限付きCookie認証
-- ダウンロードリクエストのリファラーチェック
-- 管理画面URLのカスタマイズで発見を防止
-- HTTPSリダイレクト対応（.htaccessで有効化）
-- 不正アクセス時の可愛くも厳しいエラーページ
+- 共有パスワードは bcrypt（`password_hash`）でハッシュ化
+- 共有認証Cookieはインストール固有の秘密鍵（`storage/.app_secret`）でHMAC署名。有効期限付きで、パスワード変更時に自動失効
+- 総当たり対策: 管理者ログイン（15分間に5回）、共有パスワード（IPごとに15分間に10回）
+- 初期値・短い管理者パスワードを拒否、`ADMIN_PASSWORD_HASH` に対応
+- 状態を変更するすべてのリクエストにCSRF対策（ログイン・ログアウト含む）
+- アップロードファイルはランダム名＋`.dat` 拡張子で保存し、利用者が指定したファイル名をディスク上で使わない（Webサーバーに実行・解釈されない）
+- ダウンロードは常に `Content-Disposition: attachment`、`X-Content-Type-Options: nosniff`、sandbox CSP 付き
+- ダウンロードリンクは有効期限付きのHMAC署名（Referer に依存しない直リンク防止）
+- リクエスト毎の nonce を用いた厳格な CSP、`X-Frame-Options: DENY`、`Referrer-Policy`、HSTS（HTTPS時）
+- 管理セッションCookieは `HttpOnly` / `SameSite=Strict` / `Secure`（HTTPS時）で、管理画面パスに限定
+- Host ヘッダー検証（`TRUSTED_HOSTS`）
+- すべてのファイル操作でパストラバーサル対策
+- エラーは画面に表示せずログに記録（表示する場合は `APP_DEBUG`）
+- `storage/` `database/` `src/` `templates/` `lang/` およびドットファイルへの直接アクセスを遮断（Apache の `.htaccess`、下記 Nginx 設定例、PHP ビルトインサーバー用ルーター）
+
+### Nginx 設定
+
+```nginx
+# Nginx では .htaccess が無効なため、必ず以下を server ブロックに追加してください
+# (Nginx ignores .htaccess — these rules are REQUIRED)
+location ~ ^/(storage|database|src|templates|lang)(/|$) { deny all; return 404; }
+location ~ /\.(?!well-known/) { deny all; return 404; }
+location ~ ^/(config|version)\.php$ { deny all; return 404; }
+location /assets/ { try_files $uri =404; }
+location / { try_files $uri /index.php$is_args$args; }
+location = /index.php {
+    include fastcgi_params;
+    fastcgi_param SCRIPT_FILENAME $document_root/index.php;
+    fastcgi_pass unix:/run/php/php-fpm.sock;
+}
+# index.php 以外の .php は実行しない
+location ~ \.php$ { return 404; }
+```
+
+> PHP ビルトインサーバー（`php -S`）はローカル開発専用です。
 
 ## サブディレクトリ配置（WordPress共存）
 
