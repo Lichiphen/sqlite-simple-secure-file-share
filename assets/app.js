@@ -161,9 +161,8 @@
         },
         
         escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
+            // 属性値でも安全なよう引用符もエスケープする
+            return String(text ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
         }
     };
 
@@ -599,9 +598,8 @@
         },
         
         escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
+            // 属性値でも安全なよう引用符もエスケープする
+            return String(text ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
         }
     };
 
@@ -1074,9 +1072,8 @@
         },
         
         escape(text) {
-             const div = document.createElement('div');
-             div.textContent = text;
-             return div.innerHTML;
+            // 属性値でも安全なよう引用符もエスケープする
+            return String(text ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
         }
     };
 
