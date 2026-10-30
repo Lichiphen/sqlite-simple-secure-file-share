@@ -18,7 +18,7 @@ $adminUrlPath = defined('ADMIN_URL_PATH') ? ADMIN_URL_PATH : 'admin';
     <title><?php echo $pageTitle ?? __('dashboard'); ?> - <?php _e('app_name'); ?></title>
 
     <!-- Theme initialization: System-first + light/dark/system 3-mode -->
-    <script>
+    <script <?php echo Security::nonceAttr(); ?>>
         (function () {
             var media = window.matchMedia('(prefers-color-scheme: dark)');
 
@@ -112,7 +112,7 @@ $adminUrlPath = defined('ADMIN_URL_PATH') ? ADMIN_URL_PATH : 'admin';
                         <?php endforeach; ?>
                     </div>
 
-                    <a href="<?php echo BASE_URL; ?>/<?php echo $adminUrlPath; ?>/logout" class="btn btn-ghost btn-sm ml-2" title="<?php _e('logout'); ?>">
+                    <a href="<?php echo BASE_URL; ?>/<?php echo $adminUrlPath; ?>/logout?csrf=<?php echo urlencode(Auth::generateCsrfToken()); ?>" class="btn btn-ghost btn-sm ml-2" title="<?php _e('logout'); ?>">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
                     </a>
                 </div>

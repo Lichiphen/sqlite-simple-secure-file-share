@@ -11,11 +11,11 @@ if (!defined('BASE_PATH')) exit('No direct access.');
 
     <!-- Scripts -->
     <script src="<?php echo BASE_URL; ?>/assets/app.js"></script>
-    <script>
+    <script <?php echo Security::nonceAttr(); ?>>
         <?php if ($flashMsg = Auth::getFlash()): ?>
         document.addEventListener('DOMContentLoaded', () => {
             if (window.SFS && window.SFS.Toast) {
-                window.SFS.Toast.show("<?php echo addslashes($flashMsg); ?>");
+                window.SFS.Toast.show(<?php echo Security::js($flashMsg); ?>);
             }
         });
         <?php endif; ?>

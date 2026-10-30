@@ -6,6 +6,63 @@
     'use strict';
 
     // ============================================
+    // Secure random helpers (crypto.getRandomValues)
+    // ============================================
+
+    function secureRandomInt(max) {
+        // 偏りのない一様乱数 (rejection sampling)
+        const limit = Math.floor(0x100000000 / max) * max;
+        const buf = new Uint32Array(1);
+        do {
+            window.crypto.getRandomValues(buf);
+        } while (buf[0] >= limit);
+        return buf[0] % max;
+    }
+
+    function secureShuffle(chars) {
+        const arr = chars.split('');
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = secureRandomInt(i + 1);
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr.join('');
+    }
+
+    // ============================================
+    // CSP-safe declarative handlers (replace inline on*="")
+    // ============================================
+
+    document.addEventListener('submit', (e) => {
+        const form = e.target;
+        if (form instanceof HTMLFormElement && form.dataset.confirm !== undefined) {
+            if (!window.confirm(form.dataset.confirm)) {
+                e.preventDefault();
+            }
+        }
+    });
+
+    document.addEventListener('click', (e) => {
+        const el = e.target instanceof Element ? e.target.closest('[data-sfs-close-modal],[data-sfs-hide],[data-sfs-toggle],[data-sfs-open-url],[data-sfs-reload]') : null;
+        if (!el) return;
+
+        if (el.dataset.sfsCloseModal) {
+            document.getElementById(el.dataset.sfsCloseModal)?.classList.remove('active');
+        } else if (el.dataset.sfsHide) {
+            document.getElementById(el.dataset.sfsHide)?.classList.add('hidden');
+        } else if (el.dataset.sfsToggle) {
+            document.getElementById(el.dataset.sfsToggle)?.classList.toggle('hidden');
+        } else if (el.dataset.sfsOpenUrl) {
+            const url = document.getElementById(el.dataset.sfsOpenUrl)?.value || '';
+            // 自サイトの共有URLのみ開く
+            if (url && window.SFS_CONFIG && url.indexOf(window.SFS_CONFIG.baseUrl + '/s/') === 0) {
+                window.open(url, '_blank', 'noopener');
+            }
+        } else if (el.dataset.sfsReload !== undefined) {
+            window.location.reload();
+        }
+    });
+
+    // ============================================
     // Theme Management (Uses SFS_THEME from header)
     // ============================================
 
@@ -61,8 +118,8 @@
 
     const Toast = {
         show(message, type = 'success', title = null) {
-            // Remove existing popup
-            const existing = document.querySelector('.popup-overlay');
+            // Remove existing popup (only toasts; #edit-modal / #success-modal share the class)
+            const existing = document.querySelector('.popup-overlay[data-sfs-toast]');
             if (existing) existing.remove();
             
             // Set default title based on type
@@ -72,6 +129,7 @@
             
             const overlay = document.createElement('div');
             overlay.className = 'popup-overlay';
+            overlay.dataset.sfsToast = '';
             
             const iconSvg = type === 'success' 
                 ? '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>'
@@ -104,9 +162,8 @@
         },
         
         escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
+            // 属性値でも安全なよう引用符もエスケープする
+            return String(text ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
         }
     };
 
@@ -338,6 +395,7 @@
             try {
                 const xhr = new XMLHttpRequest();
                 xhr.open('POST', window.location.href, true);
+                xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
                 
                 xhr.upload.onprogress = (e) => {
                     if (e.lengthComputable) {
@@ -541,9 +599,8 @@
         },
         
         escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
+            // 属性値でも安全なよう引用符もエスケープする
+            return String(text ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
         }
     };
 
@@ -630,16 +687,16 @@
             
             // Ensure at least one character from each type
             types.forEach(t => {
-                password += t.charAt(Math.floor(Math.random() * t.length));
+                password += t.charAt(secureRandomInt(t.length));
             });
             
             // Fill remaining length
             for (let i = password.length; i < length; i++) {
-                password += charset.charAt(Math.floor(Math.random() * charset.length));
+                password += charset.charAt(secureRandomInt(charset.length));
             }
             
             // Shuffle
-            return password.split('').sort(() => 0.5 - Math.random()).join('');
+            return secureShuffle(password);
         }
     };
 
@@ -759,8 +816,8 @@
             document.getElementById('edit-generate-password')?.addEventListener('click', () => {
                 const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
                 let password = '';
-                for (let i = 0; i < 10; i++) {
-                    password += chars.charAt(Math.floor(Math.random() * chars.length));
+                for (let i = 0; i < 16; i++) {
+                    password += chars.charAt(secureRandomInt(chars.length));
                 }
                 const input = document.getElementById('edit-password');
                 if (input) {
@@ -852,8 +909,8 @@
                 let vb = b[this.state.sort];
                 
                 if (this.state.sort === 'is_locked') {
-                     va = !!a.password_hash;
-                     vb = !!b.password_hash;
+                     va = !!a.has_password;
+                     vb = !!b.has_password;
                 }
                 
                 // Numeric sort
@@ -946,7 +1003,7 @@
             tr.innerHTML += `<td style="padding: 0.75rem 0.5rem;"><div class="font-medium" style="color: var(--color-text-primary); word-break: break-word;">${this.escape(item.title)}</div></td>`;
             
             // Status (icon only, no text) - uses .col-status
-            const isLocked = !!item.password_hash;
+            const isLocked = !!item.has_password;
             const badgeClass = isLocked ? 'badge-success' : 'badge-accent';
             const icon = isLocked 
                 ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>`
@@ -1016,9 +1073,8 @@
         },
         
         escape(text) {
-             const div = document.createElement('div');
-             div.textContent = text;
-             return div.innerHTML;
+            // 属性値でも安全なよう引用符もエスケープする
+            return String(text ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
         }
     };
 
@@ -1104,10 +1160,11 @@
         deleteFile(shareId, systemName, rowElement, fileName) {
             if(!confirm(window.SFS_LANG.delete_confirm + "\n" + fileName)) return;
             
-            fetch(window.SFS_CONFIG.baseUrl + '/admin', {
+            fetch(window.SFS_CONFIG.adminUrl, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: `action=delete_file&share_id=${shareId}&system_name=${encodeURIComponent(systemName)}&csrf_token=${window.SFS_CSRF}`
+                credentials: 'same-origin',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
+                body: new URLSearchParams({ action: 'delete_file', share_id: String(shareId), system_name: systemName, csrf_token: window.SFS_CSRF }).toString()
             })
             .then(res => res.json())
             .then(data => {
@@ -1128,10 +1185,11 @@
         },
         
         updatePassword(id, password) {
-             fetch(window.SFS_CONFIG.baseUrl + '/admin', {
+             fetch(window.SFS_CONFIG.adminUrl, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: `action=update_share&share_id=${id}&password=${encodeURIComponent(password)}&csrf_token=${window.SFS_CSRF}`
+                credentials: 'same-origin',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
+                body: new URLSearchParams({ action: 'update_share', share_id: String(id), password: password, csrf_token: window.SFS_CSRF }).toString()
             })
             .then(res => res.json())
             .then(data => {

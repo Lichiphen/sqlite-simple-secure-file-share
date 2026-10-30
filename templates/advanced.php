@@ -103,7 +103,7 @@ include __DIR__ . '/partials/header.php';
                     <!-- Maintenance Buttons -->
                     <div style="display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
                         <form method="post"
-                            onsubmit="return confirm('<?php echo htmlspecialchars(__('confirm_cleanup_sessions')); ?>');"
+                            data-confirm="<?php echo htmlspecialchars(__('confirm_cleanup_sessions'), ENT_QUOTES, 'UTF-8'); ?>"
                             style="display: flex; align-items: center; gap: 0.5rem;">
                             <input type="hidden" name="action" value="cleanup_sessions">
                             <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
@@ -124,7 +124,7 @@ include __DIR__ . '/partials/header.php';
 
                     <div style="display: flex; flex-wrap: wrap; gap: 1rem;">
                         <form method="post"
-                            onsubmit="return confirm('<?php echo htmlspecialchars(__('confirm_vacuum')); ?>');"
+                            data-confirm="<?php echo htmlspecialchars(__('confirm_vacuum'), ENT_QUOTES, 'UTF-8'); ?>"
                             style="display: flex; align-items: center; gap: 0.5rem;">
                             <input type="hidden" name="action" value="run_vacuum">
                             <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
@@ -172,7 +172,7 @@ include __DIR__ . '/partials/header.php';
                     </ul>
 
                     <form method="post"
-                        onsubmit="return confirm('<?php echo htmlspecialchars(__('confirm_delete_folders')); ?>');">
+                        data-confirm="<?php echo htmlspecialchars(__('confirm_delete_folders'), ENT_QUOTES, 'UTF-8'); ?>">
                         <input type="hidden" name="action" value="cleanup_folders">
                         <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
                         <button type="submit" class="btn" style="background: var(--color-warning); color: white;">
@@ -206,7 +206,7 @@ include __DIR__ . '/partials/header.php';
                     </ul>
 
                     <form method="post"
-                        onsubmit="return confirm('<?php echo htmlspecialchars(__('confirm_delete_records')); ?>');">
+                        data-confirm="<?php echo htmlspecialchars(__('confirm_delete_records'), ENT_QUOTES, 'UTF-8'); ?>">
                         <input type="hidden" name="action" value="cleanup_records">
                         <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
                         <button type="submit" class="btn btn-danger">

@@ -19,6 +19,11 @@
     RewriteCond %{HTTPS} off
     RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
+    # 内部ディレクトリ・設定ファイル・ドットファイルへの直接アクセスを拒否
+    RewriteRule ^(src|templates|lang|storage|database)(/|$) - [F,L]
+    RewriteRule (^|/)\.(?!well-known/) - [F,L]
+    RewriteRule ^(config|version)\.php$ - [F,L]
+
     # Existing files and directories are served directly
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
@@ -31,13 +36,22 @@
 Options -Indexes
 
 # Deny access to sensitive files
-<FilesMatch "\.(sqlite|db|log|php~)$">
-    Require all denied
+<FilesMatch "(\.(sqlite|sqlite-journal|sqlite-wal|sqlite-shm|db|log|bak|sql|ini|php~|swp)|^\.app_secret|^sess_.*)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order Deny,Allow
+        Deny from all
+    </IfModule>
 </FilesMatch>
 
-# Security headers
+# Security headers (動的ページは PHP 側で CSP 等を付与)
 <IfModule mod_headers.c>
-    Header set X-Content-Type-Options "nosniff"
-    Header set X-Frame-Options "SAMEORIGIN"
-    Header set X-XSS-Protection "1; mode=block"
+    # PHP が送った同名ヘッダーを外し、全レスポンスで1つだけ送る（二重送信を防ぐ）
+    Header onsuccess unset X-Content-Type-Options
+    Header onsuccess unset Referrer-Policy
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set Referrer-Policy "same-origin"
+    Header always unset X-Powered-By
 </IfModule>

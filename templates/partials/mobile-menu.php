@@ -13,10 +13,10 @@ $adminUrlPath = defined('ADMIN_URL_PATH') ? ADMIN_URL_PATH : 'admin';
     <div style="display: flex; flex-direction: column; height: 100%; padding: 1.5rem;">
         <!-- Top Row: Logout + Close -->
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-            <a href="<?php echo BASE_URL; ?>/<?php echo $adminUrlPath; ?>/logout" style="padding: 0.5rem 1.5rem; border: 1px solid var(--color-border); border-radius: 8px; font-size: 0.9rem; color: var(--color-text-primary); text-decoration: none;">
+            <a href="<?php echo BASE_URL; ?>/<?php echo $adminUrlPath; ?>/logout?csrf=<?php echo urlencode(Auth::generateCsrfToken()); ?>" style="padding: 0.5rem 1.5rem; border: 1px solid var(--color-border); border-radius: 8px; font-size: 0.9rem; color: var(--color-text-primary); text-decoration: none;">
                 <?php _e('logout'); ?>
             </a>
-            <button onclick="document.getElementById('mobile-menu').classList.add('hidden')" style="padding: 0.5rem; background: none; border: none; cursor: pointer; color: var(--color-text-primary);">
+            <button data-sfs-hide="mobile-menu" style="padding: 0.5rem; background: none; border: none; cursor: pointer; color: var(--color-text-primary);">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <line x1="18" y1="6" x2="6" y2="18"/>
                     <line x1="6" y1="6" x2="18" y2="18"/>
@@ -62,7 +62,7 @@ $adminUrlPath = defined('ADMIN_URL_PATH') ? ADMIN_URL_PATH : 'admin';
             </div>
             
             <!-- Close Button at bottom -->
-            <button onclick="document.getElementById('mobile-menu').classList.add('hidden')" style="margin-top: 1.5rem; padding: 1rem; background: transparent; border: 2px solid var(--color-text-primary); border-radius: 8px; font-weight: 500; cursor: pointer; color: var(--color-text-primary); font-size: 1rem;">
+            <button data-sfs-hide="mobile-menu" style="margin-top: 1.5rem; padding: 1rem; background: transparent; border: 2px solid var(--color-text-primary); border-radius: 8px; font-weight: 500; cursor: pointer; color: var(--color-text-primary); font-size: 1rem;">
                 <?php _e('close'); ?>
             </button>
         </div>
@@ -70,7 +70,7 @@ $adminUrlPath = defined('ADMIN_URL_PATH') ? ADMIN_URL_PATH : 'admin';
 </div>
 
 <!-- Floating Mobile Menu Button -->
-<button id="floating-menu-btn" class="md:hidden" style="position: fixed;bottom: calc(env(safe-area-inset-bottom, 20px) + 90px);left: 1rem;z-index: 100;display: flex;flex-direction: column;align-items: center;gap: 4px;padding: 12px 16px;border-radius: 16px;background: var(--color-bg-secondary);border: 1px solid var(--color-border);box-shadow: 0 4px 12px rgba(0,0,0,0.15);cursor: pointer;color: var(--color-text-primary);opacity: 0.85;" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')">
+<button id="floating-menu-btn" class="md:hidden" style="position: fixed;bottom: calc(env(safe-area-inset-bottom, 20px) + 90px);left: 1rem;z-index: 100;display: flex;flex-direction: column;align-items: center;gap: 4px;padding: 12px 16px;border-radius: 16px;background: var(--color-bg-secondary);border: 1px solid var(--color-border);box-shadow: 0 4px 12px rgba(0,0,0,0.15);cursor: pointer;color: var(--color-text-primary);opacity: 0.85;" data-sfs-toggle="mobile-menu">
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <line x1="4" y1="12" x2="20" y2="12"/>
         <line x1="4" y1="6" x2="20" y2="6"/>

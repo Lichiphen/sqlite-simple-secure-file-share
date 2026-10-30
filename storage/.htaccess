@@ -1,5 +1,5 @@
 # Deny all access to this directory
-# This protects uploaded files from direct URL access
+# This protects uploaded files, sessions and the database from direct URL access
 
 <IfModule mod_authz_core.c>
     Require all denied
@@ -9,3 +9,14 @@
     Order Deny,Allow
     Deny from all
 </IfModule>
+
+# 万一アクセス制御が無効でもスクリプトとして実行させない
+Options -Indexes -ExecCGI
+<IfModule mod_php.c>
+    php_flag engine off
+</IfModule>
+<IfModule mod_php7.c>
+    php_flag engine off
+</IfModule>
+RemoveHandler .php .phtml .php3 .php4 .php5 .php7 .php8 .phar .cgi .pl .py
+RemoveType .php .phtml .php3 .php4 .php5 .php7 .php8 .phar

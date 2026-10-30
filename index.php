@@ -1,52 +1,51 @@
 <?php
 /**
  * Simple Secure File Share - Main Entry Point
- * 
+ *
  * @package SimpleSecureFileShare
  * @author  AI Generator, Direction: Lichiphen
  * @license Lichiphen Proprietary License v1.0
  * @link    https://gitlab.com/lichiphen/sqlite-simple-secure-file-share
  */
 
-// Error reporting (enable for debugging)
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+// For PHP built-in server: serve only public assets directly.
+// storage/ や src/ などはビルトインサーバーでは .htaccess が効かないため配信しない
+if (PHP_SAPI === 'cli-server') {
+    $builtinPath = (string) parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
+    if (preg_match('#^/assets/[A-Za-z0-9._-]+$#', $builtinPath) && is_file(__DIR__ . $builtinPath)) {
+        return false;
+    }
+    unset($builtinPath);
+}
 
-// Load configuration
+// Load configuration (user settings) and system bootstrap
 require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/src/bootstrap.php';
 
 // Load classes
+require_once BASE_PATH . '/src/Security.php';
 require_once BASE_PATH . '/src/Database.php';
 require_once BASE_PATH . '/src/FileHandler.php';
 require_once BASE_PATH . '/src/Auth.php';
 require_once BASE_PATH . '/src/I18n.php';
 
+// Security headers for every dynamic response
+Security::sendHeaders();
+Security::sendNoCacheHeaders();
+
 // Initialize language
 I18n::init();
 
-// Start session for admin
-Auth::startSession();
-
 // Get request path
-$requestUri = $_SERVER['REQUEST_URI'];
-$path = parse_url($requestUri, PHP_URL_PATH);
-
-// For PHP built-in server: handle requests directly
-if (php_sapi_name() === 'cli-server') {
-    // If the file exists, let PHP serve it (for assets)
-    if (is_file(__DIR__ . $path)) {
-        return false;
-    }
-}
+$requestUri = $_SERVER['REQUEST_URI'] ?? '/';
+$path = (string) parse_url($requestUri, PHP_URL_PATH);
 
 // Normalize script directory path for Windows compatibility
-$scriptName = $_SERVER['SCRIPT_NAME'];
-$scriptDir = dirname($scriptName);
-// Convert backslashes to slashes
-$scriptDir = str_replace('\\', '/', $scriptDir);
+$scriptName = $_SERVER['SCRIPT_NAME'] ?? '';
+$scriptDir = str_replace('\\', '/', dirname($scriptName));
 
 // Remove base path from request if needed
-if ($scriptDir !== '/' && strpos($path, $scriptDir) === 0) {
+if ($scriptDir !== '/' && $scriptDir !== '.' && strpos($path, $scriptDir) === 0) {
     $path = substr($path, strlen($scriptDir));
 }
 
@@ -54,23 +53,17 @@ if ($scriptDir !== '/' && strpos($path, $scriptDir) === 0) {
 $path = '/' . trim($path, '/');
 
 // Parse route
-$segments = array_values(array_filter(explode('/', $path)));
+$segments = array_values(array_filter(explode('/', $path), 'strlen'));
 $route = $segments[0] ?? '';
 $param = $segments[1] ?? '';
 
 // Route handling
-// Get admin URL path from config (default: 'admin')
-$adminPath = defined('ADMIN_URL_PATH') ? ADMIN_URL_PATH : 'admin';
+$adminPath = ADMIN_URL_PATH;
 
 switch ($route) {
-    case '':
-    case 'index.php':
-        // Root URL - show cute 404 (don't reveal admin exists)
-        http_response_code(404);
-        require BASE_PATH . '/templates/404.php';
-        exit;
-
     case $adminPath:
+        // 管理画面でのみセッションを開始（共有ページ閲覧者のセッションファイル乱造を防ぐ）
+        Auth::startSession();
         handleAdmin($param, $adminPath);
         break;
 
@@ -79,11 +72,61 @@ switch ($route) {
         handleShare($param);
         break;
 
+    case '':
+    case 'index.php':
     default:
-        // 404
+        // Root URL / unknown - show cute 404 (don't reveal admin exists)
         http_response_code(404);
         require BASE_PATH . '/templates/404.php';
         exit;
+}
+
+/**
+ * JSON応答して終了
+ */
+function sendJson(array $data, int $status = 200): void
+{
+    while (ob_get_level()) {
+        ob_end_clean();
+    }
+    http_response_code($status);
+    header('Content-Type: application/json; charset=UTF-8');
+    echo json_encode($data);
+    exit;
+}
+
+/**
+ * 管理画面トップへリダイレクト
+ */
+function redirectToAdmin(string $suffix = ''): void
+{
+    header('Location: ' . BASE_URL . '/' . ADMIN_URL_PATH . $suffix);
+    exit;
+}
+
+/**
+ * POST以外を拒否
+ */
+function requirePost(): void
+{
+    if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
+        http_response_code(405);
+        header('Allow: POST');
+        exit;
+    }
+}
+
+/**
+ * 共有と配下ファイルを削除
+ */
+function deleteShareCompletely(int $shareId): bool
+{
+    $share = Database::getShareById($shareId);
+    if (!$share) {
+        return false;
+    }
+    FileHandler::deleteShareFolder((string) $share['token']);
+    return Database::deleteShare($shareId);
 }
 
 /**
@@ -97,7 +140,11 @@ function handleAdmin(string $action, string $adminPath = 'admin'): void
             break;
 
         case 'logout':
-            Auth::logoutAdmin();
+            // CSRF対策: ログアウトはトークン必須
+            $token = (string) ($_POST['csrf_token'] ?? $_GET['csrf'] ?? '');
+            if (Auth::isAdminLoggedIn() && Auth::verifyCsrfToken($token)) {
+                Auth::logoutAdmin();
+            }
             header('Location: ' . BASE_URL . '/' . $adminPath . '/login');
             exit;
 
@@ -111,11 +158,16 @@ function handleAdmin(string $action, string $adminPath = 'admin'): void
             require BASE_PATH . '/templates/howto.php';
             break;
 
-        default:
+        case '':
             // Main admin dashboard
             Auth::requireAdmin($adminPath);
             handleAdminDashboard();
             break;
+
+        default:
+            http_response_code(404);
+            require BASE_PATH . '/templates/404.php';
+            exit;
     }
 }
 
@@ -126,21 +178,31 @@ function handleAdminLogin(string $adminPath = 'admin'): void
 {
     $error = false;
 
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $password = $_POST['password'] ?? '';
-        if (Auth::loginAdmin($password)) {
-            header('Location: ' . BASE_URL . '/' . $adminPath);
-            exit;
-        }
-        $error = true;
-    }
-
     // If already logged in, redirect
     if (Auth::isAdminLoggedIn()) {
         header('Location: ' . BASE_URL . '/' . $adminPath);
         exit;
     }
 
+    if (!Auth::isAdminPasswordConfigured()) {
+        $error = 'admin_password_insecure';
+    } elseif (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
+        $password = $_POST['password'] ?? '';
+        $csrfToken = (string) ($_POST['csrf_token'] ?? '');
+
+        if (!is_string($password) || !Auth::verifyCsrfToken($csrfToken)) {
+            $error = 'invalid_request';
+        } elseif (Auth::isAdminLoginLocked()) {
+            $error = 'too_many_attempts';
+        } elseif (Auth::loginAdmin($password)) {
+            header('Location: ' . BASE_URL . '/' . $adminPath);
+            exit;
+        } else {
+            $error = Auth::isAdminLoginLocked() ? 'too_many_attempts' : 'login_failed';
+        }
+    }
+
+    $csrfToken = Auth::generateCsrfToken();
     require BASE_PATH . '/templates/login.php';
 }
 
@@ -150,14 +212,12 @@ function handleAdminLogin(string $adminPath = 'admin'): void
 function handleAdminDashboard(): void
 {
     // Process form submissions
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $action = $_POST['action'] ?? '';
-        $csrfToken = $_POST['csrf_token'] ?? '';
+    if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
+        $action = (string) ($_POST['action'] ?? '');
+        $csrfToken = (string) ($_POST['csrf_token'] ?? '');
 
         if (!Auth::verifyCsrfToken($csrfToken)) {
-            http_response_code(403);
-            echo json_encode(['success' => false, 'message' => __('invalid_access')]);
-            exit;
+            sendJson(['success' => false, 'message' => __('invalid_access')], 403);
         }
 
         switch ($action) {
@@ -169,22 +229,7 @@ function handleAdminDashboard(): void
             case 'delete_share':
                 $shareId = (int) ($_POST['share_id'] ?? 0);
                 if ($shareId > 0) {
-                    // Try to find share to get token for file deletion
-                    // (Though orphan cleanup handles it, immediate deletion is better)
-                    $allShares = Database::getAllShares();
-                    $token = '';
-                    foreach ($allShares as $s) {
-                        if ($s['id'] === $shareId) {
-                            $token = $s['token'];
-                            break;
-                        }
-                    }
-
-                    if ($token) {
-                        FileHandler::deleteShareFolder($token);
-                    }
-
-                    if (Database::deleteShare($shareId)) {
+                    if (deleteShareCompletely($shareId)) {
                         Auth::setFlash(__('success'));
                     } else {
                         Auth::setFlash(__('error') . ': Delete failed');
@@ -198,61 +243,48 @@ function handleAdminDashboard(): void
                     FileHandler::deleteAllFiles();
                     Auth::setFlash(__('cleanup_complete'));
                 } catch (\Throwable $e) {
-                    Auth::setFlash(__('error') . ': ' . $e->getMessage());
+                    error_log('Delete all failed: ' . $e->getMessage());
+                    Auth::setFlash(__('error'));
                 }
                 break;
 
             case 'update_share':
-                // AJAX: Update password
+                // AJAX: Update password (empty string = remove password)
                 $shareId = (int) ($_POST['share_id'] ?? 0);
-                // If password is provided, hash it. If empty string, set to null (remove password).
-                // Note: Frontend should send empty string to remove password.
                 $password = $_POST['password'] ?? '';
+                if (!is_string($password) || strlen($password) > 1024 || !Database::getShareById($shareId)) {
+                    sendJson(['success' => false, 'message' => 'Invalid parameters'], 400);
+                }
                 $passwordHash = $password !== '' ? password_hash($password, PASSWORD_DEFAULT) : null;
 
-                header('Content-Type: application/json');
                 if (Database::updatePassword($shareId, $passwordHash)) {
-                    echo json_encode(['success' => true]);
-                } else {
-                    echo json_encode(['success' => false, 'message' => 'Update failed']);
+                    sendJson(['success' => true]);
                 }
-                exit;
+                sendJson(['success' => false, 'message' => 'Update failed']);
+                break;
 
             case 'delete_file':
-                // AJAX: Delete single file
+                // AJAX: Delete single file (must belong to the share)
                 $shareId = (int) ($_POST['share_id'] ?? 0);
-                $systemName = $_POST['system_name'] ?? '';
+                $systemName = (string) ($_POST['system_name'] ?? '');
 
-                $shares = Database::getAllShares();
-                $token = '';
-                foreach ($shares as $s) {
-                    if ($s['id'] === $shareId) {
-                        $token = $s['token'];
-                        break;
-                    }
+                $share = Database::getShareById($shareId);
+                $file = $share ? Database::getFile($shareId, $systemName) : null;
+
+                if (!$share || !$file) {
+                    sendJson(['success' => false, 'message' => 'Invalid parameters'], 400);
                 }
 
-                header('Content-Type: application/json');
-                if ($token && $systemName) {
-                    // Try to delete file (ignore if missing) and record
-                    $fileDeleted = FileHandler::deleteFile($token, $systemName);
-                    $recordDeleted = Database::deleteFileRecord($shareId, $systemName);
-
-                    if ($recordDeleted) {
-                        echo json_encode(['success' => true]);
-                    } else {
-                        echo json_encode(['success' => false, 'message' => 'Database delete failed']);
-                    }
-                } else {
-                    echo json_encode(['success' => false, 'message' => 'Invalid parameters']);
+                FileHandler::deleteFile((string) $share['token'], (string) $file['system_name']);
+                if (Database::deleteFileRecord($shareId, (string) $file['system_name'])) {
+                    sendJson(['success' => true]);
                 }
-                exit;
+                sendJson(['success' => false, 'message' => 'Database delete failed']);
+                break;
         }
 
         // Redirect to avoid form resubmission
-        $adminUrlPath = defined('ADMIN_URL_PATH') ? ADMIN_URL_PATH : 'admin';
-        header('Location: ' . BASE_URL . '/' . $adminUrlPath);
-        exit;
+        redirectToAdmin();
     }
 
     require BASE_PATH . '/templates/admin.php';
@@ -266,9 +298,13 @@ function handleUpload(): void
     // Start buffering to catch any warnings/errors that might corrupt JSON
     ob_start();
 
-    $title = trim($_POST['share_title'] ?? '');
+    $title = $_POST['share_title'] ?? '';
     $password = $_POST['share_password'] ?? null;
     $files = $_FILES['files'] ?? [];
+
+    if (!is_string($title) || ($password !== null && (!is_string($password) || strlen($password) > 1024)) || !is_array($files)) {
+        sendJson(['success' => false, 'message' => __('upload_failed')], 400);
+    }
 
     try {
         $result = FileHandler::processUpload($files, $title, $password);
@@ -278,43 +314,7 @@ function handleUpload(): void
     }
 
     // Discard any output generated during processing (warnings, etc.)
-    ob_end_clean();
-
-    // Return JSON for AJAX
-    header('Content-Type: application/json');
-    echo json_encode($result);
-    exit;
-}
-
-/**
- * Handle share deletion
- */
-function handleDelete(): void
-{
-    $shareId = (int) ($_POST['share_id'] ?? 0);
-
-    if ($shareId > 0) {
-        // Get token before deleting
-        $share = Database::getShareByToken('');
-        $shares = Database::getAllShares();
-        foreach ($shares as $s) {
-            if ($s['id'] === $shareId) {
-                $share = $s;
-                break;
-            }
-        }
-
-        if ($share) {
-            // Delete files
-            FileHandler::deleteShareFolder($share['token']);
-            // Delete database record
-            Database::deleteShare($shareId);
-        }
-    }
-
-    $adminUrlPath = defined('ADMIN_URL_PATH') ? ADMIN_URL_PATH : 'admin';
-    header('Location: ' . BASE_URL . '/' . $adminUrlPath);
-    exit;
+    sendJson($result);
 }
 
 /**
@@ -325,23 +325,17 @@ function handleAdvancedPage(): void
     $csrfToken = Auth::generateCsrfToken();
 
     // Process cleanup actions
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $action = $_POST['action'] ?? '';
-        $postCsrfToken = $_POST['csrf_token'] ?? '';
+    if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
+        $action = (string) ($_POST['action'] ?? '');
+        $postCsrfToken = (string) ($_POST['csrf_token'] ?? '');
 
         if (Auth::verifyCsrfToken($postCsrfToken)) {
             try {
                 switch ($action) {
                     case 'delete_share':
-                        if (isset($_POST['share_id'])) {
-                            Database::deleteShare((int) $_POST['share_id']);
-                            Auth::setFlash(__('success'));
-                        }
-                        break;
-
                     case 'delete': // Alias for delete_share in some templates
                         if (isset($_POST['share_id'])) {
-                            Database::deleteShare((int) $_POST['share_id']);
+                            deleteShareCompletely((int) $_POST['share_id']);
                             Auth::setFlash(__('success'));
                         }
                         break;
@@ -359,7 +353,7 @@ function handleAdvancedPage(): void
                         $existingFolders = FileHandler::getUploadFolders();
                         $orphanRecords = Database::getOrphanRecords($existingFolders);
                         foreach ($orphanRecords as $record) {
-                            Database::deleteShare($record['id']);
+                            Database::deleteShare((int) $record['id']);
                         }
                         Auth::setFlash(__('success'));
                         break;
@@ -374,10 +368,11 @@ function handleAdvancedPage(): void
                     case 'run_vacuum':
                         $result = Database::runVacuum();
                         if ($result['vacuum']) {
-                            $reduced = FileHandler::formatSize($result['size_reduced']);
+                            $reduced = FileHandler::formatSize((int) $result['size_reduced']);
                             Auth::setFlash(__('vacuum_complete') . ' (' . __('size_reduced') . ': ' . $reduced . ')');
                         } else {
-                            Auth::setFlash(__('error') . ': ' . ($result['vacuum_error'] ?? 'Unknown error'));
+                            error_log('VACUUM failed: ' . ($result['vacuum_error'] ?? 'Unknown error'));
+                            Auth::setFlash(__('error'));
                         }
                         break;
 
@@ -387,21 +382,16 @@ function handleAdvancedPage(): void
                         Auth::setFlash(__('cleanup_complete'));
                         break;
                 }
-            } catch (Exception $e) {
-                Auth::setFlash(__('error') . ': ' . $e->getMessage());
+            } catch (\Throwable $e) {
+                error_log('Advanced action failed: ' . $e->getMessage());
+                Auth::setFlash(__('error'));
             }
         } else {
             Auth::setFlash(__('error') . ': Invalid CSRF Token');
         }
 
         // Redirect to avoid form resubmission
-        $adminUrlPath = defined('ADMIN_URL_PATH') ? ADMIN_URL_PATH : 'admin';
-        $redirectUrl = BASE_URL . '/' . $adminUrlPath;
-        if (strpos($_SERVER['REQUEST_URI'], 'advanced') !== false) {
-            $redirectUrl .= '/advanced';
-        }
-        header('Location: ' . $redirectUrl);
-        exit;
+        redirectToAdmin('/advanced');
     }
 
     // Get statistics
@@ -420,7 +410,8 @@ function handleAdvancedPage(): void
  */
 function handleShare(string $token): void
 {
-    if (empty($token)) {
+    // トークン形式を検証（不正な値はDB/ファイルシステムに渡さない）
+    if (!Security::isValidToken($token)) {
         http_response_code(404);
         require BASE_PATH . '/templates/share-not-found.php';
         exit;
@@ -433,9 +424,10 @@ function handleShare(string $token): void
         require BASE_PATH . '/templates/share-not-found.php';
         exit;
     }
+    $shareId = (int) $share['id'];
 
     // Get files
-    $files = Database::getFilesForShare($share['id']);
+    $files = Database::getFilesForShare($shareId);
     if (empty($files)) {
         http_response_code(404);
         require BASE_PATH . '/templates/share-not-found.php';
@@ -443,21 +435,30 @@ function handleShare(string $token): void
     }
 
     // Check password
-    if ($share['password_hash']) {
+    if (!empty($share['password_hash'])) {
         $error = false;
+        $passwordHash = (string) $share['password_hash'];
 
         // Handle password submission
-        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['sfs_password'])) {
-            if (Auth::authenticateShare($_POST['sfs_password'], $share['password_hash'], $token, $share['id'])) {
+        if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && isset($_POST['sfs_password'])) {
+            $submitted = $_POST['sfs_password'];
+            if (Auth::isShareLocked($token)) {
+                $error = 'too_many_attempts';
+            } elseif (is_string($submitted) && strlen($submitted) <= 1024
+                && Auth::authenticateShare($submitted, $passwordHash, $token, $shareId)) {
                 // Redirect to clear POST
-                header('Location: ' . BASE_URL . '/s/' . $token);
+                header('Location: ' . BASE_URL . '/s/' . $token, true, 303);
                 exit;
+            } else {
+                $error = Auth::isShareLocked($token) ? 'too_many_attempts' : 'incorrect_password';
             }
-            $error = true;
         }
 
         // Check if authenticated
-        if (!Auth::isShareAuthenticated($token, $share['id'])) {
+        if (!Auth::isShareAuthenticated($token, $shareId, $passwordHash)) {
+            if ($error) {
+                http_response_code($error === 'too_many_attempts' ? 429 : 401);
+            }
             require BASE_PATH . '/templates/password.php';
             exit;
         }
@@ -465,52 +466,41 @@ function handleShare(string $token): void
 
     // Handle download
     if (isset($_GET['download'])) {
-        // Referer check - prevent direct URL access
-        $referer = $_SERVER['HTTP_REFERER'] ?? '';
-        $expectedReferer = BASE_URL . '/s/' . $token;
-
-        // Check if referer is from our share page
-        if (empty($referer) || strpos($referer, BASE_URL . '/s/' . $token) === false) {
+        // 直リンク防止: 共有ページで発行した署名付きリンクのみ許可
+        $signature = $_GET['dl'] ?? null;
+        if (!Auth::verifyDownloadSignature($token, is_string($signature) ? $signature : null)) {
             http_response_code(403);
             require BASE_PATH . '/templates/access-denied.php';
             exit;
         }
 
-        $downloadParam = $_GET['download'];
-
-        // Increment download count
-        Database::incrementDownloadCount($share['id']);
+        $downloadParam = is_string($_GET['download']) ? $_GET['download'] : '';
 
         if ($downloadParam === 'zip') {
-            // ZIP download
-            FileHandler::downloadAsZip($token, $files, $share['title']);
+            Database::incrementDownloadCount($shareId);
+            FileHandler::downloadAsZip($token, $files, (string) $share['title']);
         } else {
-            // Single file download
-            $systemName = basename($downloadParam);
-            $originalName = null;
+            // Single file download (must be registered for this share)
+            $file = Security::isSafeFileName($downloadParam) ? Database::getFile($shareId, $downloadParam) : null;
 
-            foreach ($files as $file) {
-                if ($file['system_name'] === $systemName) {
-                    $originalName = $file['original_name'];
-                    break;
-                }
+            if ($file) {
+                Database::incrementDownloadCount($shareId);
+                FileHandler::downloadFile($token, (string) $file['system_name'], (string) $file['original_name']);
             }
 
-            if ($originalName) {
-                FileHandler::downloadFile($token, $systemName, $originalName);
-            } else {
-                http_response_code(404);
-                echo __('file_not_found');
-                exit;
-            }
+            http_response_code(404);
+            echo htmlspecialchars(__('file_not_found'), ENT_QUOTES, 'UTF-8');
+            exit;
         }
     }
 
     // Calculate total size
     $totalSize = 0;
     foreach ($files as $file) {
-        $totalSize += $file['size'];
+        $totalSize += (int) $file['size'];
     }
+
+    $downloadSignature = Auth::downloadSignature($token);
 
     // Render share page
     require BASE_PATH . '/templates/share.php';

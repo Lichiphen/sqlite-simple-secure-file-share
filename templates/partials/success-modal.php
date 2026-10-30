@@ -18,7 +18,7 @@ if (!defined('BASE_PATH')) exit('No direct access.');
         
         <!-- URL + Copy in one row -->
         <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
-            <button type="button" id="modal-url-btn" class="btn btn-secondary" style="flex: 1;" onclick="window.open(document.getElementById('modal-share-url').value, '_blank')">
+            <button type="button" id="modal-url-btn" class="btn btn-secondary" style="flex: 1;" data-sfs-open-url="modal-share-url">
                 URL
             </button>
             <button type="button" id="modal-copy-btn" class="btn btn-secondary" style="flex: 1;">
@@ -30,7 +30,7 @@ if (!defined('BASE_PATH')) exit('No direct access.');
         <input type="hidden" id="modal-share-url" value="">
         
         <!-- Close button -->
-        <button type="button" onclick="window.location.reload()" class="btn w-full" style="background: transparent; border: 2px solid var(--color-text-primary); color: var(--color-text-primary);">
+        <button type="button" data-sfs-reload class="btn w-full" style="background: transparent; border: 2px solid var(--color-text-primary); color: var(--color-text-primary);">
             <?php _e('close'); ?>
         </button>
     </div>

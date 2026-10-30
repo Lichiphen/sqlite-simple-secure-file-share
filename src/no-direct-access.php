@@ -6,7 +6,7 @@
 function showNoDirectAccessError() {
     http_response_code(403);
     // Try to get cat image path
-    $scriptDir = dirname($_SERVER['SCRIPT_NAME']);
+    $scriptDir = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/'));
     // Go up directories to find assets folder
     $catImage = '';
     if (strpos($scriptDir, '/templates') !== false) {
@@ -17,6 +17,10 @@ function showNoDirectAccessError() {
         $catImage = $scriptDir . '/assets/cat-mascot.png';
     }
     
+    $catImage = htmlspecialchars($catImage, ENT_QUOTES, 'UTF-8');
+    header('Content-Type: text/html; charset=UTF-8');
+    header('X-Content-Type-Options: nosniff');
+    header('X-Frame-Options: DENY');
     echo <<<HTML
 <!DOCTYPE html>
 <html lang="ja">
@@ -98,6 +102,6 @@ HTML;
 }
 
 // Auto-execute when this file is accessed directly
-if (!defined('BASE_PATH') && basename($_SERVER['PHP_SELF']) === basename(__FILE__)) {
+if (!defined('BASE_PATH') && basename($_SERVER['PHP_SELF'] ?? '') === basename(__FILE__)) {
     showNoDirectAccessError();
 }
